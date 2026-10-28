@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oreo's Puppy Hub</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#211d1f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/tailwind.css">
+<script src="js/lucide.min.js"></script>
+<style>
+/* Layout idea: an "Oreo" sandwich — dark cookie header band, milk-white working area, dark footer;
+   one sticky tab rail, cards stacked in a single column on phones, two columns on wide screens. */
+:root{
+  --bg:#f1f3f2; --surface:#ffffff; --surface-2:#f7f8f7; --ink:#16191b; --muted:#5a6266; --line:#dbe1de;
+  --accent:#1d6a5a; --accent-ink:#ffffff; --accent-soft:#e0eee9;
+  --cookie:#211d1f; --cookie-ink:#f4f1ee;
+  --warn:#9a4a05; --warn-soft:#fcefdd; --danger:#b42318; --danger-soft:#fdecea; --ok:#2b7a33; --ok-soft:#e5f2e6;
+  --font-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101413; --surface:#181d1c; --surface-2:#1e2422; --ink:#e7ecea; --muted:#9ba5a1; --line:#2b3330;
+    --accent:#62c2ab; --accent-ink:#08130f; --accent-soft:#1b2f2a;
+    --cookie:#0a0c0b; --cookie-ink:#eef1ef;
+    --warn:#f2aa55; --warn-soft:#33250f; --danger:#f3796e; --danger-soft:#3a1916; --ok:#74c67b; --ok-soft:#192d1b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101413; --surface:#181d1c; --surface-2:#1e2422; --ink:#e7ecea; --muted:#9ba5a1; --line:#2b3330;
+  --accent:#62c2ab; --accent-ink:#08130f; --accent-soft:#1b2f2a;
+  --cookie:#0a0c0b; --cookie-ink:#eef1ef;
+  --warn:#f2aa55; --warn-soft:#33250f; --danger:#f3796e; --danger-soft:#3a1916; --ok:#74c67b; --ok-soft:#192d1b;
+  color-scheme:dark;
+}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font-body);}
+body{font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;}
+h1,h2,h3,.display{font-family:var(--font-display);text-wrap:balance;letter-spacing:-.01em;}
+.num{font-variant-numeric:tabular-nums;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;}
+.muted{color:var(--muted);}
+.cookie{background:var(--cookie);color:var(--cookie-ink);}
+.cookie .muted{color:color-mix(in srgb,var(--cookie-ink) 70%,transparent);}
+.wrap{max-width:1120px;margin:0 auto;padding-left:16px;padding-right:16px;}
+
+/* header */
+.logo{width:42px;height:42px;border-radius:50%;background:var(--cookie-ink);display:grid;place-items:center;flex:none;
+  box-shadow:inset 0 0 0 6px #2a2527, inset 0 0 0 8px var(--cookie-ink);}
+.logo i,.logo svg{color:#2a2527;width:18px;height:18px}
+.searchbox{display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--cookie-ink) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--cookie-ink) 22%,transparent);border-radius:12px;padding:8px 12px;}
+.searchbox input{background:transparent;border:0;outline:0;color:var(--cookie-ink);width:100%;font:inherit;}
+.searchbox input::placeholder{color:color-mix(in srgb,var(--cookie-ink) 60%,transparent);}
+.searchbox:focus-within{border-color:var(--accent);}
+.hbtn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:7px 11px;font-size:14px;font-weight:700;
+  border:1px solid color-mix(in srgb,var(--cookie-ink) 25%,transparent);color:var(--cookie-ink);background:transparent;cursor:pointer;}
+.hbtn:hover{background:color-mix(in srgb,var(--cookie-ink) 10%,transparent);}
+.hbtn svg{width:16px;height:16px}
+.bar{height:10px;border-radius:99px;background:color-mix(in srgb,var(--cookie-ink) 16%,transparent);overflow:hidden;}
+.bar > span{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s ease;}
+.bar.light{background:var(--line);}
+
+/* tabs */
+.tabs{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);}
+.tabrow{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{flex:none;display:flex;align-items:center;gap:7px;padding:12px 14px;border:0;background:transparent;color:var(--muted);
+  font-weight:700;font-size:14.5px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:var(--font-body);}
+.tab svg{width:17px;height:17px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}
+.tab:focus-visible,.btn:focus-visible,.hbtn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+
+/* panels & cards */
+main > section,.grid > *{min-width:0;}
+.panel{display:none;}
+.panel.active{display:block;}
+body.searching .panel{display:block;}
+body.searching .panel + .panel{border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;}
+.hide-s{display:none !important;}
+.hidden{display:none !important;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0;}
+.card h3{font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.card h3 svg{width:20px;height:20px;color:var(--accent);flex:none}
+.card.cookie{background:var(--cookie);color:var(--cookie-ink);}
+.card.cookie .inp{background:color-mix(in srgb,var(--cookie-ink) 8%,transparent);color:var(--cookie-ink);border-color:color-mix(in srgb,var(--cookie-ink) 25%,transparent);}
+.card.alert{border-color:color-mix(in srgb,var(--danger) 45%,var(--line));box-shadow:inset 4px 0 0 var(--danger);}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line));box-shadow:inset 4px 0 0 var(--warn);}
+.card.feature{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:inset 4px 0 0 var(--accent);}
+.ph{font-size:1.6rem;font-weight:800;line-height:1.2;}
+.lede{max-width:68ch;color:var(--muted);}
+.prose p,.prose li{max-width:70ch;}
+.prose ul{list-style:disc;padding-left:1.2rem;display:grid;gap:6px;}
+.prose ol{list-style:decimal;padding-left:1.3rem;display:grid;gap:8px;}
+.prose strong{color:var(--ink);}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;}
+.pill.ok{background:var(--ok-soft);color:var(--ok);}
+.pill.warn{background:var(--warn-soft);color:var(--warn);}
+.pill.danger{background:var(--danger-soft);color:var(--danger);}
+.pill.acc{background:var(--accent-soft);color:var(--accent);}
+.pill.mute{background:var(--surface-2);color:var(--muted);border:1px solid var(--line);}
+.note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px;}
+.note.warn{background:var(--warn-soft);border-color:transparent;color:var(--ink);}
+.note.danger{background:var(--danger-soft);border-color:transparent;color:var(--ink);}
+.note.ok{background:var(--ok-soft);border-color:transparent;color:var(--ink);}
+
+/* checklist */
+.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;}
+.ck:first-of-type{border-top:0;}
+.ck input{appearance:none;-webkit-appearance:none;flex:none;width:22px;height:22px;margin-top:2px;border:2px solid var(--muted);border-radius:6px;
+  display:grid;place-items:center;cursor:pointer;background:var(--surface);}
+.ck input:checked{background:var(--accent);border-color:var(--accent);}
+.ck input:checked::after{content:"";width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px);}
+.ck input:checked + span .t{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted);}
+.ck .tip{display:block;font-size:13.5px;color:var(--muted);margin-top:2px;}
+.ck .crit{color:var(--danger);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-left:6px;}
+.grp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.grp-count{font-size:13px;font-weight:700;color:var(--muted);}
+
+/* forms */
+.fld{display:grid;gap:4px;font-size:14px;min-width:0;}
+.fld label{font-weight:700;}
+.inp,select.inp,textarea.inp{width:100%;min-width:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:15px;}
+textarea.inp{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14.5px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;}
+.btn:hover{background:var(--surface-2);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn.primary:hover{filter:brightness(1.07);}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line));}
+.btn svg{width:16px;height:16px}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:14px;padding:8px 12px;border-radius:9px;cursor:pointer;font-family:var(--font-body);}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;}
+table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
+.tbl th{text-align:left;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--surface-2);padding:9px 10px;white-space:nowrap;}
+.tbl td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top;}
+.tbl tr.hl td{background:var(--accent-soft);}
+.tbl tr.al td{background:var(--warn-soft);}
+.tbl td.time{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+/* timeline */
+.tl{display:grid;gap:0;}
+.tl-item{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);}
+.tl-item:first-child{border-top:0;}
+.tl-date{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;}
+.tl-item.past .tl-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line);}
+.tl-item.now{background:var(--accent-soft);border-radius:10px;padding-left:8px;padding-right:8px;}
+
+/* countdown */
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.cd div{background:color-mix(in srgb,var(--cookie-ink) 8%,transparent);border-radius:12px;padding:10px 6px;text-align:center;}
+.cd b{display:block;font-family:var(--font-display);font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums;}
+.cd span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.75;}
+
+/* social matrix */
+.soc{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);}
+.soc:first-of-type{border-top:0}
+.soc .lbl{flex:1;min-width:0;}
+.soc .dots{display:flex;gap:4px;}
+.soc .dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block;}
+.soc .dots i.on{background:var(--accent);}
+.ibtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;font-weight:800;font-size:18px;line-height:1;}
+.ibtn:hover{background:var(--surface-2);}
+
+/* toxic */
+.tox{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 0;border-top:1px solid var(--line);}
+.tox:first-child{border-top:0;}
+
+/* modal & toast */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:none;align-items:flex-end;justify-content:center;padding:12px;}
+.modal.open{display:flex;}
+.modal .sheet{background:var(--surface);color:var(--ink);border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:20px;border:1px solid var(--line);}
+@media (min-width:640px){.modal{align-items:center;}}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--cookie);color:var(--cookie-ink);
+  padding:10px 16px;border-radius:12px;font-weight:700;font-size:14px;z-index:70;transition:all .25s ease;pointer-events:none;max-width:90vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* chart */
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--font-body);}
+.chart .grid{stroke:var(--line);stroke-width:1;}
+.chart .line{stroke:var(--accent);stroke-width:2;fill:none;}
+.chart .area{fill:var(--accent);opacity:.12;}
+.chart .band{fill:var(--ok);opacity:.10;}
+.chart .pt{fill:var(--surface);stroke:var(--accent);stroke-width:2;}
+.chart .pt.end{fill:var(--accent);}
+.chart .hit{fill:transparent;cursor:pointer;}
+
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.kv div{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;}
+.kv b{display:block;font-family:var(--font-display);font-size:1.45rem;line-height:1.15;font-variant-numeric:tabular-nums;}
+.kv span{font-size:12.5px;color:var(--muted);}
+.step-n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:800;display:grid;place-items:center;font-size:14px;}
+.phase{border:1px solid var(--line);border-radius:14px;padding:14px;}
+.phase.now{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent);}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important;}}
+@media print{.tabs,.hbtn,.searchbox{display:none !important}.panel{display:block !important}}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="cookie">
+  <div class="wrap py-4 grid gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="logo" aria-hidden="true"><i data-lucide="paw-print"></i></div>
+      <div class="flex-1 min-w-[180px]">
+        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight">Oreo's Puppy Hub</h1>
+        <p class="muted text-sm">Miniature Cavoodle · male · home in Waitara, Upper North Shore</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button class="hbtn" id="btnExport" type="button"><i data-lucide="download"></i>Backup</button>
+        <button class="hbtn" id="btnImport" type="button"><i data-lucide="upload"></i>Restore</button>
+        <button class="hbtn" id="btnReset" type="button"><i data-lucide="rotate-ccw"></i>Reset</button>
+      </div>
+    </div>
+    <div class="grid gap-3 sm:grid-cols-[1fr_300px] items-center">
+      <label class="searchbox" for="q"><i data-lucide="search" class="w-4 h-4 opacity-70"></i>
+        <input id="q" type="search" placeholder="Search everything: tick, grapes, crate, lepto…" autocomplete="off">
+      </label>
+      <div>
+        <div class="flex justify-between text-sm mb-1"><span class="font-bold">Readiness</span><span class="num" id="readyTxt">0%</span></div>
+        <div class="bar" role="progressbar" aria-label="Overall readiness" id="readyBar" aria-valuemin="0" aria-valuemax="100"><span style="width:0%"></span></div>
+      </div>
+    </div>
+    <p id="searchInfo" class="text-sm hidden"></p>
+    <p id="storageWarn" class="text-sm hidden" style="color:var(--warn-soft)">This viewer isn't keeping your ticks between visits. Use Backup regularly, or open the downloaded .html file in your phone's browser.</p>
+  </div>
+</header>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap tabrow" role="tablist">
+    <button class="tab" role="tab" data-tab="home" aria-selected="true"><i data-lucide="truck"></i>Arrival</button>
+    <button class="tab" role="tab" data-tab="prep" aria-selected="false"><i data-lucide="shield-alert"></i>Prep &amp; Safety</button>
+    <button class="tab" role="tab" data-tab="routine" aria-selected="false"><i data-lucide="clock"></i>Routine &amp; Mid-Jan</button>
+    <button class="tab" role="tab" data-tab="train" aria-selected="false"><i data-lucide="graduation-cap"></i>Training &amp; Coat</button>
+    <button class="tab" role="tab" data-tab="food" aria-selected="false"><i data-lucide="utensils"></i>Nutrition</button>
+    <button class="tab" role="tab" data-tab="vet" aria-selected="false"><i data-lucide="stethoscope"></i>Vet &amp; Ticks</button>
+    <button class="tab" role="tab" data-tab="notes" aria-selected="false"><i data-lucide="notebook-pen"></i>Notes</button>
+  </div>
+</nav>
+
+<main class="wrap py-5 grid gap-4">
+
+<!-- ================================================================ -->
+<!-- TAB 1: DASHBOARD & ARRIVAL -->
+<!-- ================================================================ -->
+<section class="panel active" data-panel="home" aria-label="Arrival">
+  <div class="grid gap-4 lg:grid-cols-2">
+
+    <div class="card cookie" style="border-color:transparent">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <h2 class="text-xl font-extrabold" id="cdTitle">Delivery countdown</h2>
+        <span class="pill acc" id="ageNow">—</span>
+      </div>
+      <p class="muted text-sm mb-3" id="cdSub">Pet transport from the breeder to Waitara</p>
+      <div class="cd" id="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hrs</span></div><div><b id="cdM">–</b><span>min</span></div><div><b id="cdS">–</b><span>sec</span></div></div>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="fld"><label for="cfgPickup">Delivery date &amp; ETA</label><input class="inp" type="datetime-local" id="cfgPickup" data-cfg="pickup"></div>
+        <div class="fld"><label for="cfgDob">Oreo's birthday (est.)</label><input class="inp" type="date" id="cfgDob" data-cfg="dob"></div>
+        <div class="fld col-span-2"><label for="cfgMom">Date Mum leaves (the "Mid-January Cliff")</label><input class="inp" type="date" id="cfgMom" data-cfg="momLeaves"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><i data-lucide="calendar-clock"></i>Oreo's first five months</h3>
+      <p class="muted text-sm mb-2">Dates work themselves out from his birthday and the vaccine dates you log on the Vet tab.</p>
+      <div class="tl" id="timeline"></div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card feature">
+      <div class="grp-head"><h3 class="!mb-0"><i data-lucide="truck"></i>Lock in with the transporter</h3><span class="grp-count" data-count="transport"></span></div>
+      <p class="muted text-sm mb-1">The Hunter Valley to Waitara is about 135 km, roughly 1 hr 45 min direct. Oreo will only have his first (C3) vaccine, so the van is the biggest parvo risk of the whole move: other dogs, shared crates and roadside toilet stops. Get these answers in writing before you pay.</p>
+      <div data-list="transport"></div>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="house"></i>Delivery day at home</h3>
+      <ol>
+        <li class="si"><strong>Clear the whole delivery window.</strong> ETAs drift on shared runs. Someone stays home with their phone on loud.</li>
+        <li class="si"><strong>Pen ready before he leaves the breeder:</strong> grass tray, bed, water bowl, and his first meal of the breeder's food measured out.</li>
+        <li class="si"><strong>Meet the van downstairs.</strong> Take the hand-over at the kerb or in the car park, then carry him (in the transport crate or your arms) through the lift to your flat. No common-area grass; other building dogs use it.</li>
+        <li class="si"><strong>Two-minute arrival check before you sign</strong> (below). Photograph Oreo and his crate, and write any concerns on the delivery paperwork.</li>
+        <li class="si"><strong>Straight to the grass tray,</strong> quiet praise when he goes.</li>
+        <li class="si"><strong>Small drink now, small meal later.</strong> Offer water straight away. After 30–60 minutes, if he's settled, give about a quarter of a normal meal. A long trip can drop a small puppy's blood sugar.</li>
+        <li class="si"><strong>Then quiet:</strong> let him explore the pen and sleep. No visitors. Message the breeder that he's arrived.</li>
+      </ol>
+      <div class="note mt-3 si"><strong>Arrival check:</strong> bright and responsive · gums pink and moist (press one; colour returns in about 2 seconds) · quiet, easy breathing · no vomit, diarrhoea or blood in the crate · skin at the scruff springs back when gently lifted · walks steadily.</div>
+      <div class="note danger mt-2 si"><strong>Call a vet the same day if</strong> he's flat or wobbly, his gums are pale, dry or sticky, he vomits more than once, has diarrhoea, or won't eat by evening. If he seems weak, rub a little honey on his gums on the way: small puppies can drop their blood sugar.</div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card">
+      <div class="grp-head"><h3 class="!mb-0"><i data-lucide="package"></i>Home-ready kit for delivery day</h3><span class="grp-count" data-count="homekit"></span></div>
+      <div data-list="homekit"></div>
+    </div>
+    <div class="card prose">
+      <h3><i data-lucide="message-circle-question"></i>Ask the breeder before dispatch</h3>
+      <ul>
+        <li class="si">Which transporter she has used before, and how her other puppies travelled.</li>
+        <li class="si">When Oreo will last eat. A light meal 2–3 hours before departure cuts car sickness.</li>
+        <li class="si">To let him toilet on her property right before he's loaded.</li>
+        <li class="si">To pack his scented blanket and a bag of his food in or with his crate.</li>
+        <li class="si">To weigh him on dispatch day and send you the number (it decides his tick-chew size).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card">
+      <div class="grp-head"><h3 class="!mb-0"><i data-lucide="file-check"></i>Paperwork &amp; items from the breeder</h3><span class="grp-count" data-count="handover"></span></div>
+      <p class="muted text-sm mb-1">You won't be there in person, so ask the breeder to email copies before dispatch and send the originals with the transporter in a labelled envelope. Tick each item once you have it.</p>
+      <div data-list="handover"></div>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="moon"></i>First 72 hours: night survival</h3>
+      <ul>
+        <li class="si"><strong>Crate beside your bed</strong> for the first week or two. Your fingers at the door and your breathing nearby do more than any gadget.</li>
+        <li class="si"><strong>Scent and warmth:</strong> the breeder's litter blanket, a heartbeat-style snuggle toy, and a warm (not hot) wrapped water bottle. Skip microwaved wheat bags: they hot-spot and burn.</li>
+        <li class="si"><strong>Don't "cry it out" at 8 weeks.</strong> He has just lost his mother and littermates. Answer cries with a calm, low voice and a hand at the crate. Settling him isn't spoiling him; panic teaches the crate is scary.</li>
+        <li class="si"><strong>One silent night toilet trip</strong> (around 2–3 am) for roughly the first two weeks: carry him to the grass tray, no talking or play, straight back to bed.</li>
+        <li class="si"><strong>No welcome party.</strong> Keep visitors away for 3 days. Sleep, eat, toilet, short play is the whole job.</li>
+        <li class="si"><strong>Start alone-training on Day 1</strong> with 30-second gaps: see the Mid-January protocol on the Routine tab.</li>
+        <li class="si"><strong>Own-vet health check within 72 hours</strong> (check the deadline in your breeder's health guarantee).</li>
+      </ul>
+      <div class="note danger mt-3 si"><strong>Go to a vet now if:</strong> he hasn't eaten for 12 hours, is limp or wobbly (small puppies can drop their blood sugar: rub a little honey on his gums on the way), vomits repeatedly, has diarrhoea with blood, or breathes noisily or with effort. Emergency numbers are on the Vet tab.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- TAB 2: PRE-ARRIVAL & 4TH FLOOR SAFETY -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="prep" aria-label="Prep and safety">
+  <div class="card alert">
+    <h3><i data-lucide="triangle-alert"></i>4th-floor balcony: the one hazard that can't have a second chance</h3>
+    <p class="lede">An 8-week Cavoodle weighs 2–3 kg and can squeeze through a gap roughly the width of his head. Treat any gap wider than about 5 cm (under the glass, between balusters, beside planters) as passable. Two layers protect him: a fortified balcony, and a toilet that means he never needs the balcony at all.</p>
+    <div class="grid gap-3 md:grid-cols-2 mt-3">
+      <div class="note"><strong>Tier 1 · Indoor toilet zone.</strong> An X-pen in the laundry or bathroom with his bed at one end and a <em>real-grass</em> tray at the other (Dr Ian Dunbar's "long-term confinement area"). Real grass, not fabric pads, so he learns "grass = toilet" and never generalises to rugs or bath mats.</div>
+      <div class="note"><strong>Tier 2 · Balcony fortification.</strong> UV-stabilised HDPE balcony mesh or clear acrylic panels zip-tied taut along the lower balustrade, plus a household rule: <strong>balcony door open = Oreo on a lead in someone's hand.</strong></div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4" id="prepGroups"></div>
+
+  <div class="card mt-4 prose">
+    <h3><i data-lucide="building-2"></i>Strata notes for your building</h3>
+    <ul>
+      <li class="si">NSW strata by-laws can't unreasonably ban a pet, but most schemes ask owners to <strong>notify the owners corporation in writing</strong>. Check your building's pet by-law for the exact wording.</li>
+      <li class="si">Balcony balustrades are usually <strong>common property</strong>. Removable, zip-tied mesh is normally fine, but a quick email to the building manager or committee (you're on it) avoids a later dispute about appearance from the street.</li>
+      <li class="si">Ask the building manager when the pest contractor lays <strong>rat bait or snail pellets</strong> in common areas and where. Both are serious poisons for puppies.</li>
+      <li class="si">A friendly note under neighbours' doors before 10 Nov ("new puppy, first few nights may be noisy") buys a lot of goodwill.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- TAB 3: DAILY ROUTINE & MID-JANUARY PROTOCOL -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="routine" aria-label="Routine">
+  <div class="card">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div>
+        <h3><i data-lucide="calendar-days"></i>Daily schedule</h3>
+        <p class="muted text-sm max-w-[62ch]">Rule of thumb at 8–12 weeks: about 1 hour awake, then about 2 hours asleep. Over-tired puppies bite harder and have more accidents. Naps happen in the pen or crate, not on laps.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Schedule">
+        <button type="button" data-sched="nov" aria-pressed="true">Nov–Jan · Mum home</button>
+        <button type="button" data-sched="jan" aria-pressed="false">After Mid-Jan · solo / hybrid</button>
+      </div>
+    </div>
+    <div class="flex gap-2 flex-wrap mt-3 text-sm"><span class="pill warn">Home-alone rep</span><span class="pill acc">Nap block</span><span class="pill mute">On duty = who handles it</span></div>
+    <div class="tbl-wrap mt-3"><table class="tbl" id="schedTbl"></table></div>
+    <p class="muted text-sm mt-2" id="schedNote"></p>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card prose">
+      <h3><i data-lucide="sprout"></i>Indoor &amp; balcony potty blueprint</h3>
+      <ol>
+        <li class="si"><strong>Take him to the grass tray</strong> on waking, within 10 minutes of eating or drinking, after play, and every 30–60 minutes he's awake.</li>
+        <li class="si"><strong>Carry him</strong> for the first weeks (puppies wee on the way). Set him on the grass, say your cue once ("go toilet"), then stand still and boring.</li>
+        <li class="si"><strong>Reward within 2 seconds</strong> of finishing, on the grass: quiet praise and a tiny treat. That timing is the whole lesson.</li>
+        <li class="si"><strong>Nothing in 2 minutes?</strong> Back into the pen or crate for 10 minutes, then try again. That's Dunbar's errorless method: he never gets free time with a full bladder.</li>
+        <li class="si"><strong>Accidents:</strong> no scolding, no nose-rubbing. Clean with an enzyme cleaner (ammonia-based cleaners smell like urine to him). Shorten the gaps between trips.</li>
+        <li class="si"><strong>Grass tray care:</strong> scoop solids at once, rinse daily, replace the turf every 1–3 weeks. Keep two trays and rotate.</li>
+        <li class="si"><strong>Balcony:</strong> not a toilet while there are gaps. After fortification you can move a second tray out there, but every balcony trip is on lead.</li>
+        <li class="si"><strong>After vaccines</strong> (see Vet tab), start pairing the indoor tray with a ground-level grass spot near your building so he can toilet on walks too.</li>
+      </ol>
+    </div>
+    <div class="card warn prose">
+      <h3><i data-lucide="users"></i>Why the Mid-January Cliff matters</h3>
+      <p>From November to mid-January three adults are home almost all day, so Oreo will learn that a person is always available. Then Mum leaves when he's about 4 months old, right as the socialisation window closes and the household routine changes. Puppies that never practised being alone are the classic setup for separation distress: howling that bothers neighbours in a strata building, chewing at the door, and toileting when left.</p>
+      <p class="mt-2"><strong>The fix is boring and daily:</strong> practise being alone while everyone is still home, so being alone is normal long before it becomes necessary. Emily Larlham (Kikopup) and the AVSAB both stress staying under his threshold: short, successful absences beat long, stressful ones.</p>
+      <p class="mt-2"><strong>The rota rule:</strong> spread feeding, toileting and play across all three adults, with you (the long-term carer) doing nights and mornings. Mum should be loved, not the only one who meets his needs.</p>
+    </div>
+  </div>
+
+  <div class="card feature mt-4">
+    <div class="grp-head"><h3 class="!mb-0"><i data-lucide="door-open"></i>Mid-January separation-anxiety prevention protocol</h3><span class="grp-count" data-count="alone"></span></div>
+    <p class="muted text-sm mb-3">Five phases. The phase that matches today's date is highlighted. Tick each step when it's become routine.</p>
+    <div class="grid gap-3" id="phases"></div>
+  </div>
+
+  <div class="card mt-4">
+    <h3><i data-lucide="timer"></i>Home-alone practice log</h3>
+    <p class="muted text-sm mb-3">Log every rep. Increase the time only after two calm reps in a row at the current length; after any distressed rep, halve it.</p>
+    <form id="aloneForm" class="grid gap-3 grid-cols-2 sm:grid-cols-[1fr_1fr_1.4fr_auto] items-end">
+      <div class="fld"><label for="aloneDate">Date</label><input class="inp" type="date" id="aloneDate" required></div>
+      <div class="fld"><label for="aloneMin">Minutes alone</label><input class="inp num" type="number" id="aloneMin" min="0.5" max="480" step="0.5" value="2" required></div>
+      <div class="fld col-span-2 sm:col-span-1"><label for="aloneHow">How did he cope?</label>
+        <select class="inp" id="aloneHow"><option value="calm">Calm: settled, chewed, napped</option><option value="mild">Mild: a few whines, settled</option><option value="distress">Distressed: howled, scratched, panted</option></select></div>
+      <button class="btn primary col-span-2 sm:col-span-1" type="submit"><i data-lucide="plus"></i>Log</button>
+    </form>
+    <div class="kv mt-4" id="aloneStats"></div>
+    <div class="tbl-wrap mt-3"><table class="tbl" id="aloneTbl"></table></div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- TAB 4: TRAINING & CURLY COAT CARE -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="train" aria-label="Training">
+  <p class="lede mb-4">All force-free (positive reinforcement). No yelling, no alpha rolls, no spray bottles. They damage trust and make biting and toileting problems worse.</p>
+  <div class="grid gap-4 lg:grid-cols-2">
+
+    <div class="card prose">
+      <h3><i data-lucide="hand"></i>Bite inhibition · Dr Ian Dunbar</h3>
+      <p class="muted text-sm mb-2">Mouthing is how puppies learn how hard their jaws are. The goal isn't "never bite" yet; it's "always bite softly", learned before about 4½ months while his teeth are tiny.</p>
+      <ol>
+        <li class="si"><strong>Let him mouth</strong> during calm play so he gets feedback.</li>
+        <li class="si"><strong>A hard nip ends the game:</strong> a short "ouch", then a <strong>reverse time-out</strong>. You leave (step over the gate) for 10–30 seconds instead of dragging him anywhere.</li>
+        <li class="si"><strong>Lower the bar each week:</strong> first only the hardest bites end play, then medium ones, until only gentle mouthing is tolerated.</li>
+        <li class="si"><strong>Then teach "Off" and "Take it"</strong> so mouth contact happens only on invitation.</li>
+        <li class="si"><strong>Zoomies + biting at dusk</strong> usually means over-tired. Pen with a chew and nap, not more play.</li>
+      </ol>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="box"></i>Crate Games &amp; It's Yer Choice · Susan Garrett</h3>
+      <ul>
+        <li class="si"><strong>Crate as a game:</strong> toss treats in, let him come out, reward going back in by choice. Add the door closing for a second, then longer. Use a release word ("free!") so <em>you</em> decide when the door opens, never his whining.</li>
+        <li class="si"><strong>It's Yer Choice (impulse control):</strong> hold treats in a closed fist. When he stops pawing and licking and backs off, open your hand. If he dives, close it. When he waits, give him a treat from that hand. Progress to an open palm, then treats on the floor.</li>
+        <li class="si"><strong>Why it matters here:</strong> a dog that waits by choice is a dog that won't bolt through the balcony or front door.</li>
+      </ul>
+      <p class="muted text-sm mt-2">Garrett's full Crate Games programme is a paid course; these are the core ideas.</p>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="leaf"></i>Capturing Calmness &amp; cooperative care · Emily Larlham (Kikopup)</h3>
+      <ul>
+        <li class="si"><strong>Capturing Calmness:</strong> keep treats nearby. Whenever Oreo lies down, sighs, or settles on his own, quietly place a treat between his paws. No cue, no excitement. Within weeks, "settle" becomes his default.</li>
+        <li class="si"><strong>Mat settle:</strong> reward lying on a specific mat; this becomes his "work-from-home station" during your Teams calls.</li>
+        <li class="si"><strong>Chin rest for grooming:</strong> teach him to rest his chin on your palm or a cushion. While the chin is down, you brush; if he lifts it, you pause. He gets a say, and grooming stops being a wrestle.</li>
+        <li class="si"><strong>Separation:</strong> Kikopup's approach is many tiny, successful departures. That's exactly the Mid-January protocol.</li>
+      </ul>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="star"></i>Learn to Earn · Dr Sophia Yin</h3>
+      <ul>
+        <li class="si"><strong>"Say please by sitting":</strong> sitting earns everything: food bowl down, lead clipped on, door opening, play starting, being picked up.</li>
+        <li class="si"><strong>Every adult uses the same rules</strong>, especially important with three of you and variable shift hours.</li>
+        <li class="si"><strong>Use his daily kibble</strong> as rewards in short sessions (3–5 minutes, several times a day).</li>
+        <li class="si"><strong>Watch his body language</strong> during socialisation: lip-licking, yawning, whale-eye, tucked tail or freezing mean "too much". Add distance and end on an easy win.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="grp-head"><h3 class="!mb-0"><i data-lucide="ear"></i>Waitara socialisation matrix (before vaccines)</h3><span class="grp-count" id="socCount"></span></div>
+    <p class="muted text-sm mb-1">The socialisation window starts closing at about 12–16 weeks, before his vaccines are finished. So he meets the world <strong>carried, in a sling or pram, or from the car</strong>, paws off public ground. Each dot is one calm, positive exposure (at a distance where he can still eat a treat). Aim for 3+.</p>
+    <p class="text-sm mb-3"><span class="pill warn">Summer special</span> NYE fireworks and Sydney storms arrive at 15–16 weeks: play recordings at low volume during meals from week 1.</p>
+    <div class="grid gap-x-8 md:grid-cols-2" id="socGrid"></div>
+  </div>
+
+  <div class="card mt-4 prose">
+    <h3><i data-lucide="scissors"></i>Line-brushing a curly Poodle-dominant coat</h3>
+    <p class="muted text-sm mb-2">Surface brushing leaves mats at the skin that only shaving can remove. Line brushing works the coat in thin layers, all the way down to the skin. Daily 3–5 minutes as a puppy, with a lick mat for distraction.</p>
+    <div class="grid gap-4 md:grid-cols-2">
+      <ol>
+        <li class="si"><strong>Kit:</strong> soft slicker brush, metal "greyhound" comb (wide + fine teeth), detangling spray, lick mat.</li>
+        <li class="si"><strong>Start at a back paw.</strong> With your free hand push the hair upward to make a horizontal parting where you can see skin.</li>
+        <li class="si"><strong>Brush the hair below the line</strong> with light, short strokes outward from the skin. Never press: slicker pins scratch ("brush burn").</li>
+        <li class="si"><strong>Comb test:</strong> slide the metal comb through to the skin. A snag = a tangle. Hold the hair at its base and tease it apart with fingers and spray.</li>
+        <li class="si"><strong>Move the line up 1 cm</strong> and repeat. Leg by leg, then the body in rows.</li>
+      </ol>
+      <ul>
+        <li class="si"><strong>Mat hot spots:</strong> behind and under the ears, armpits, collar and harness lines, belly, inner thighs, tail and beard.</li>
+        <li class="si"><strong>Never bathe a matted coat:</strong> water tightens mats. Brush out first, then dry fully while combing.</li>
+        <li class="si"><strong>Ears:</strong> Cavoodles are prone to ear infections. Check weekly, dry after baths, and use only a vet-recommended cleaner.</li>
+        <li class="si"><strong>First groom:</strong> a short puppy "intro" visit after his vaccines, then a full groom every 6–8 weeks.</li>
+        <li class="si"><strong>Tick season trim:</strong> ask for a shorter teddy clip from spring to autumn. A short coat makes the nightly tick search far easier.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- TAB 5: NUTRITION & TOXIC FOODS -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="food" aria-label="Nutrition">
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="card">
+      <h3><i data-lucide="calculator"></i>Feeding calculator</h3>
+      <p class="muted text-sm mb-3">Estimates daily energy with the standard puppy formula (resting energy 70 × kg<sup>0.75</sup>, × 3 until 4 months, × 2.5 to 6 months, × 2 after). Your food's label and Oreo's body shape win: you should feel his ribs easily but not see them.</p>
+      <div class="grid gap-4">
+        <div class="fld"><label for="cWeight">Current weight: <span class="num" id="cWeightV"></span> kg</label><input type="range" id="cWeight" min="1" max="14" step="0.1" data-cfg="curWeight"></div>
+        <div class="fld"><label for="cAge">Age: <span class="num" id="cAgeV"></span> weeks <button type="button" class="text-xs underline ml-1" id="cAgeToday" style="color:var(--accent)">use today</button></label><input type="range" id="cAge" min="8" max="52" step="1" data-cfg="calcAge"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="fld"><label for="cKcal">Kibble energy (kcal/kg)</label><input class="inp num" type="number" id="cKcal" min="2500" max="5000" step="10" data-cfg="kcal"></div>
+          <div class="fld"><label for="cWet">Wet food share: <span class="num" id="cWetV"></span>%</label><input type="range" id="cWet" min="0" max="50" step="5" data-cfg="wetPct"></div>
+        </div>
+        <div class="fld"><label for="cWetKcal">Wet food energy (kcal/kg)</label><input class="inp num" type="number" id="cWetKcal" min="600" max="1600" step="10" data-cfg="wetKcal"></div>
+      </div>
+      <div class="kv mt-4" id="calcOut"></div>
+      <p class="muted text-xs mt-2">Energy is printed on the bag as kcal/kg or kcal/cup (often 3,600–4,200 kcal/kg for puppy kibble). Treats and training rewards come out of this total.</p>
+    </div>
+
+    <div class="card">
+      <h3><i data-lucide="shuffle"></i>7-day food transition</h3>
+      <p class="muted text-sm mb-3">Keep Oreo on the breeder's exact food for the first 1–2 weeks: a new home is enough change. Then switch over 7 days. Grams below follow the calculator's daily total.</p>
+      <div class="tbl-wrap"><table class="tbl" id="transTbl"></table></div>
+      <p class="muted text-sm mt-2">Soft stools? Hold at the current step for 2–3 extra days. Diarrhoea with blood or lethargy is a same-day vet visit.</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card prose">
+      <h3><i data-lucide="cookie"></i>Kong recipes for puppies</h3>
+      <p class="muted text-sm mb-2">Always measure from the daily ration. Freeze a batch of 4 every night: they power the home-alone reps.</p>
+      <ol>
+        <li class="si"><strong>Week-1 easy mode:</strong> loosely drop dry kibble and a few soft treats into a puppy Kong. No freezing; he should win quickly.</li>
+        <li class="si"><strong>Soaked breakfast Kong:</strong> soak a meal's kibble in warm water for 15 minutes, mash, pack in, freeze overnight.</li>
+        <li class="si"><strong>Pumpkin layer:</strong> kibble mixed with 1 tsp plain cooked pumpkin, a whole kibble as a "cork" in the small hole, freeze.</li>
+        <li class="si"><strong>Yoghurt seal:</strong> kibble packed in, top sealed with 1 tsp plain Greek yoghurt (unsweetened, xylitol-free), freeze.</li>
+        <li class="si"><strong>Lick mat for grooming:</strong> thin smear of plain pumpkin or yoghurt, frozen flat for 20 minutes.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3><i data-lucide="search-check"></i>Toxic &amp; safe food checker</h3>
+      <div class="flex gap-2 flex-wrap items-center mb-2">
+        <input class="inp flex-1 min-w-[180px]" type="search" id="toxQ" placeholder="Type a food: grapes, ham, avocado…" aria-label="Search foods">
+      </div>
+      <div class="seg mb-2" role="group" aria-label="Filter foods">
+        <button type="button" data-tox="all" aria-pressed="true">All</button>
+        <button type="button" data-tox="danger" aria-pressed="false">Dangerous</button>
+        <button type="button" data-tox="caution" aria-pressed="false">Caution</button>
+        <button type="button" data-tox="safe" aria-pressed="false">Safe</button>
+      </div>
+      <div class="note danger text-sm mb-2">Ate something dangerous? Note what, how much and when, then call your vet or the <strong>Animal Poisons Helpline 1300 869 738</strong>. After hours, go straight to a 24/7 hospital (Vet tab).</div>
+      <div id="toxList" style="max-height:520px;overflow:auto"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- TAB 6: VET, VACCINES & TICKS -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="vet" aria-label="Vet">
+  <div class="card alert">
+    <h3><i data-lucide="bug"></i>Paralysis tick (<em>Ixodes holocyclus</em>): daily search, every night</h3>
+    <p class="lede">Waitara backs onto Hornsby's bushland corridors and the breeder's place is in Hunter tick country too. Paralysis ticks peak from spring through summer, exactly when Oreo arrives. Prevention chews reduce risk but never replace a nightly fingertip search, and the curly coat hides ticks well.</p>
+    <div class="grid gap-4 md:grid-cols-2 mt-3 prose">
+      <ol>
+        <li class="si"><strong>Use your fingertips, slowly,</strong> feeling for a small bump against the skin. Start at the nose.</li>
+        <li class="si"><strong>Head and face:</strong> lips, around the eyes, chin and beard, inside and behind both ears.</li>
+        <li class="si"><strong>Neck and chest:</strong> under the collar or harness, throat, front of chest.</li>
+        <li class="si"><strong>Legs and feet:</strong> armpits, down each leg, between every toe and pad.</li>
+        <li class="si"><strong>Body:</strong> back, sides, belly, groin, under and around the tail and anus.</li>
+        <li class="si"><strong>Found one?</strong> Remove it at once with a tick hook (twist and lift) without squeezing the body, keep it in a sealed bag, and call your vet. Signs can worsen for 24–48 h after removal.</li>
+      </ol>
+      <div class="note danger"><strong>Emergency signs (go now, day or night):</strong>
+        <ul class="mt-1">
+          <li>Change in bark or voice</li>
+          <li>Wobbly or weak back legs</li>
+          <li>Vomiting or regurgitating froth</li>
+          <li>Coughing, gagging, noisy or grunting breathing</li>
+          <li>Drooling or trouble swallowing</li>
+        </ul>
+        <p class="mt-2">Keep him calm and cool, and give no food or water (swallowing may be impaired).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3><i data-lucide="syringe"></i>Vaccines (AVA-aligned for Sydney)</h3>
+    <p class="muted text-sm mb-3">"Due window" is calculated from Oreo's birthday. Enter the real date when each is done. Sydney and the Hunter have both had fatal canine leptospirosis cases since 2017, so lepto is part of the core plan: two doses 2–4 weeks apart, then yearly.</p>
+    <div class="tbl-wrap"><table class="tbl" id="vaxTbl"></table></div>
+    <p class="note warn text-sm mt-3"><strong>Parks rule:</strong> 14 days after the final C5 before ground walks, Asquith Park off-leash, or other dogs' haunts. Note: Waitara Park / Mark Taylor Oval isn't a council off-leash area; the nearest fenced off-leash park is Asquith Park (Rotherwood Ave), and Hunt Reserve in Mount Colah is another. Puppy preschool at a vet clinic is usually allowed from a week after the first vet vaccine, on cleaned indoor floors.</p>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card">
+      <h3><i data-lucide="pill"></i>Intestinal worming</h3>
+      <p class="muted text-sm mb-3">Every 2 weeks until 12 weeks, monthly until 6 months, then every 3 months. Use an all-wormer with <strong>praziquantel</strong> (e.g. Milbemax, Drontal): it's the ingredient that covers tapeworms, including hydatid tapeworm. Monthly tick chews don't.</p>
+      <div class="tbl-wrap"><table class="tbl" id="wormTbl"></table></div>
+    </div>
+    <div class="card">
+      <h3><i data-lucide="shield-check"></i>Monthly tick, flea &amp; heartworm chew</h3>
+      <p class="muted text-sm mb-3"><strong>Simparica Trio</strong> from 8 weeks and ≥1.25 kg; <strong>NexGard Spectra</strong> from 8 weeks and ≥2 kg. Ask the breeder what Oreo has already had, and dose by his weight on the day (the weight log below helps). Confirm the combination with your vet.</p>
+      <div class="fld mb-3"><label for="tickProd">Product</label>
+        <select class="inp" id="tickProd" data-cfg="tickProd"><option>Simparica Trio</option><option>NexGard Spectra</option><option>Other (vet-prescribed)</option></select></div>
+      <div class="tbl-wrap"><table class="tbl" id="tickTbl"></table></div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card">
+      <h3><i data-lucide="scale"></i>Weight log</h3>
+      <form id="wForm" class="grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <div class="fld"><label for="wDate">Date</label><input class="inp" type="date" id="wDate" required></div>
+        <div class="fld"><label for="wKg">Weight (kg)</label><input class="inp num" type="number" id="wKg" min="0.5" max="20" step="0.01" required placeholder="2.4"></div>
+        <button class="btn primary col-span-2 sm:col-span-1" type="submit"><i data-lucide="plus"></i>Add</button>
+      </form>
+      <div id="wChart" class="mt-4"></div>
+      <div class="tbl-wrap mt-3"><table class="tbl" id="wTbl"></table></div>
+      <p class="muted text-xs mt-2">Shaded band: expected 2.0–3.0 kg at 8 weeks rising toward an adult 7–12 kg (straight-line guide, not a growth standard). Weigh on the same scale each week: you holding him on bathroom scales, minus you.</p>
+    </div>
+
+    <div class="card">
+      <h3><i data-lucide="siren"></i>Emergency &amp; local vets</h3>
+      <div class="grid gap-3" id="vetDir">
+        <div class="note si"><div class="flex justify-between gap-2 flex-wrap"><strong>SASH North Ryde</strong><span class="pill ok">24/7 emergency</span></div>
+          1 Richardson Place, North Ryde · <a href="tel:0298890289">(02) 9889 0289</a><br><span class="muted text-sm">Specialist and emergency hospital, about 20–25 min from Waitara off-peak.</span></div>
+        <div class="note si"><div class="flex justify-between gap-2 flex-wrap"><strong>Northside Emergency Veterinary Service (NEVS)</strong><span class="pill ok">24/7 emergency</span></div>
+          335 Mona Vale Rd, Terrey Hills · <a href="tel:0294522933">(02) 9452 2933</a><br><span class="muted text-sm">Treats tick paralysis, snake bite and poisoning. Call ahead so they can prepare.</span></div>
+        <div class="note si"><div class="flex justify-between gap-2 flex-wrap"><strong>Greencross Vets Ku-ring-gai</strong><span class="pill mute">Daytime GP vet</span></div>
+          276 Bobbin Head Rd, North Turramurra · <a href="tel:0294494111">(02) 9449 4111</a><br><span class="muted text-sm">General practice with extended weekday hours; not a 24-hour hospital.</span></div>
+        <div class="note si"><div class="flex justify-between gap-2 flex-wrap"><strong>Animal Poisons Helpline</strong><span class="pill warn">Advice line</span></div>
+          <a href="tel:1300869738">1300 869 738</a> · free advice on whether a poisoning needs a vet</div>
+        <div class="note">
+          <strong>Your regular vet</strong>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <input class="inp" id="myVet" data-cfg="vetName" placeholder="Clinic name" aria-label="Regular vet name">
+            <input class="inp num" id="myVetPh" data-cfg="vetPhone" placeholder="Phone" aria-label="Regular vet phone">
+          </div>
+        </div>
+      </div>
+      <p class="muted text-xs mt-3">Details checked October 2026. Hours change; save these in your phone now and call before driving.</p>
+    </div>
+  </div>
+
+  <div class="card mt-4 prose">
+    <h3><i data-lucide="clipboard-list"></i>NSW registration &amp; admin</h3>
+    <ul>
+      <li class="si"><strong>Microchip transfer:</strong> The breeder must microchip Oreo before sale and transfer ownership to you on the NSW Pet Registry. Make sure your Service NSW login works before delivery day.</li>
+      <li class="si"><strong>Lifetime registration:</strong> since July 2024, NSW dogs must be registered by 12 weeks or when ownership changes, whichever comes first. For Oreo that's when ownership transfers on delivery. The 2026/27 fee is $84; pay within 28 days to avoid a $25 late fee.</li>
+      <li class="si"><strong>Desexing:</strong> an extra $198 applies if he isn't desexed by 6 months. If your vet recommends waiting (common for growth in small breeds), get their written note to the registry <em>before</em> he turns 6 months.</li>
+      <li class="si"><strong>Pet insurance:</strong> take it out before the first vet visit if you want it; conditions noted at that visit can become pre-existing exclusions, and most policies have illness waiting periods.</li>
+    </ul>
+  </div>
+  <p class="muted text-xs mt-4">General guidance compiled for Oreo's household, not a substitute for your vet. Where your vet's advice differs, follow your vet.</p>
+</section>
+<!-- ================================================================ -->
+<!-- TAB 7: NOTES -->
+<!-- ================================================================ -->
+<section class="panel" data-panel="notes" aria-label="Notes">
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] items-start">
+    <div class="card feature">
+      <h3><i data-lucide="notebook-pen"></i><span id="noteFormTitle">New note</span></h3>
+      <p class="muted text-sm mb-3">Anything worth remembering: what the transporter said, odd poos, a question for the vet, what worked at bedtime.</p>
+      <form id="noteForm" class="grid gap-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="fld"><label for="noteCat">Type</label>
+            <select class="inp" id="noteCat"></select></div>
+          <div class="fld"><label for="noteDate">Date</label><input class="inp" type="date" id="noteDate" required></div>
+        </div>
+        <div class="fld"><label for="noteTitle">Title (optional)</label><input class="inp" id="noteTitle" maxlength="120" placeholder="e.g. Ask about delaying desexing"></div>
+        <div class="fld"><label for="noteBody">Note</label><textarea class="inp" id="noteBody" rows="6" required placeholder="Write it down while it's fresh…" style="font-family:var(--font-body);font-size:15px"></textarea></div>
+        <label class="ck" for="notePin" style="border:0;padding:0"><input type="checkbox" id="notePin"><span><span class="t">Pin to the top</span></span></label>
+        <div class="flex gap-2 flex-wrap">
+          <button class="btn primary" type="submit" id="noteSave"><i data-lucide="save"></i>Save note</button>
+          <button class="btn hidden" type="button" id="noteCancel">Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="grp-head flex-wrap">
+        <h3 class="!mb-0"><i data-lucide="notebook-text"></i>Your notes</h3>
+        <button class="btn" type="button" id="noteCopyAll"><i data-lucide="copy"></i>Copy for vet / family</button>
+      </div>
+      <div class="seg my-2" role="group" aria-label="Filter notes" id="noteFilters"></div>
+      <div class="grid gap-3" id="noteList"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="cookie mt-6">
+  <div class="wrap py-5 text-sm muted">Saved on this device only, never uploaded. Works offline once installed. Use Backup to copy everything to another phone or keep a safe copy.</div>
+</footer>
+
+<!-- modal -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="sheet">
+    <div class="flex justify-between items-center gap-3 mb-3"><h2 class="text-xl font-extrabold" id="mTitle"></h2><button class="ibtn" id="mClose" type="button" aria-label="Close"><i data-lucide="x"></i></button></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
