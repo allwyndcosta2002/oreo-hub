@@ -2,6 +2,7 @@
  "name": "Oreo's Puppy Hub",
  "short_name": "Oreo Hub",
  "description": "Puppy care, routine and vet tracker for Oreo.",
+ "id": "./",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
@@ -10,17 +11,17 @@
  "theme_color": "#211d1f",
  "icons": [
   {
-   "src": "icons/icon-192.png",
+   "src": "icons/icon-192-135ed68f.png",
    "sizes": "192x192",
    "type": "image/png"
   },
   {
-   "src": "icons/icon-512.png",
+   "src": "icons/icon-512-135ed68f.png",
    "sizes": "512x512",
    "type": "image/png"
   },
   {
-   "src": "icons/maskable-512.png",
+   "src": "icons/maskable-512-135ed68f.png",
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"
