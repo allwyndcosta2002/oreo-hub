@@ -16,7 +16,7 @@ const icons=()=>{try{window.lucide&&lucide.createIcons();}catch(e){}};
 /* ---------------- state ---------------- */
 const KEY="oreoHub.v1";
 const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],social:{},notes:[],
-  cfg:{pickup:"2026-11-13T10:00",dob:"2026-09-18",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:""}};
+  cfg:{pickup:"2026-11-13T10:00",dob:"2026-09-18",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DRE=/^\d{4}-\d{2}-\d{2}$/;
 const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
@@ -38,7 +38,7 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
   if(c.schedule==="nov"||c.schedule==="jan")D.schedule=c.schedule;
   [["curWeight",1,14],["calcAge",8,52],["kcal",2500,5000],["wetPct",0,50],["wetKcal",600,1600]].forEach(([k,lo,hi])=>{const n=num(c[k],lo,hi);if(n!==null)D[k]=k==="calcAge"?Math.round(n):n;});
   if(["Simparica Trio","NexGard Spectra","Other (vet-prescribed)"].includes(c.tickProd))D.tickProd=c.tickProd;
-  D.vetName=str(c.vetName,80);D.vetPhone=str(c.vetPhone,30);
+  D.vetName=str(c.vetName,80);D.vetPhone=str(c.vetPhone,30);D.trName=str(c.trName,80);D.trPhone=str(c.trPhone,30);D.brPhone=str(c.brPhone,30);
   return d;}
 let storageOK=true;
 function load(){try{const r=localStorage.getItem(KEY);if(r){const m=merge(JSON.parse(r));
@@ -52,6 +52,11 @@ function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");cl
 
 /* ---------------- content: checklists ---------------- */
 const LISTS={
+ pay:{title:"Payments",items:[
+  ["pay1","Deposit $612 paid through RightPaw (25 Oct)"],
+  ["pay2","Balance $3,500 paid through RightPaw (due 13 Nov)",null,true],
+  ["pay3","Transport company paid / invoice saved"],
+  ["pay4","Receipts saved (RightPaw dashboard)"]]},
  transport:{title:"Transporter",items:[
   ["tr1","Transporter booked; business name, driver's name and mobile saved"],
   ["tr2","Direct solo run, or you know exactly which animals share the van","Every other dog on board is a parvo risk for a C3-only puppy",true],
@@ -311,12 +316,12 @@ function renderPhases(){
 }
 function allIds(groups){return groups.flatMap(g=>g.items.map(i=>i[0]));}
 function updateProgress(){
-  const sets={transport:LISTS.transport.items.map(i=>i[0]),homekit:LISTS.homekit.items.map(i=>i[0]),handover:LISTS.handover.items.map(i=>i[0]),alone:allIds(ALONE)};
+  const sets={pay:LISTS.pay.items.map(i=>i[0]),transport:LISTS.transport.items.map(i=>i[0]),homekit:LISTS.homekit.items.map(i=>i[0]),handover:LISTS.handover.items.map(i=>i[0]),alone:allIds(ALONE)};
   PREP.forEach(g=>sets[g.id]=g.items.map(i=>i[0]));
   for(const k in sets){const n=sets[k].filter(id=>S.checks[id]).length,tot=sets[k].length;
     $$(`[data-count="${k}"]`).forEach(e=>e.textContent=`${n}/${tot}`);
     const gb=$(`[data-gbar="${k}"]`);if(gb)gb.style.width=(100*n/tot)+"%";}
-  const ready=[...sets.transport,...sets.homekit,...sets.handover,...allIds(PREP)];
+  const ready=[...sets.pay,...sets.transport,...sets.homekit,...sets.handover,...allIds(PREP)];
   const n=ready.filter(id=>S.checks[id]).length,pct=Math.round(100*n/ready.length);
   $("#readyTxt").textContent=`${pct}% · ${n}/${ready.length} tasks`;
   $("#readyBar span").style.width=pct+"%";$("#readyBar").setAttribute("aria-valuenow",pct);
@@ -344,6 +349,7 @@ function renderTimeline(){
   const ev=[
    [p,"Delivery to Waitara","8 weeks old · pet transport from the breeder"],
    [p&&add(p,3),"Own-vet health check deadline","Within 72 h of delivery"],
+   [new Date(2026,10,13),"Balance $3,500 due","Pay through RightPaw before dispatch"],
    [add(dob,70),"C5 #1 + Lepto #1 window opens","10–12 weeks"],
    [p&&add(p,28),"NSW registration late-fee date","Pay the $84 before this"],
    [p&&add(p,42),"Breeder's free insurance ends","Ongoing cover in place by now"],
