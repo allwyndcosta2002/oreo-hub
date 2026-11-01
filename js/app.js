@@ -16,7 +16,7 @@ const icons=()=>{try{window.lucide&&lucide.createIcons();}catch(e){}};
 /* ---------------- state ---------------- */
 const KEY="oreoHub.v1";
 const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],social:{},notes:[],
-  cfg:{pickup:"2026-11-13T10:00",dob:"2026-09-18",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
+  cfg:{pickup:"2026-11-13T10:00",dob:"2026-09-12",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DRE=/^\d{4}-\d{2}-\d{2}$/;
 const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
@@ -42,8 +42,8 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
   return d;}
 let storageOK=true;
 function load(){try{const r=localStorage.getItem(KEY);if(r){const m=merge(JSON.parse(r));
-  /* one-off update to the confirmed RightPaw dates: born 18 Sep, home 13 Nov */
-  if(m.cfg.dob==="2026-09-15")m.cfg.dob="2026-09-18";if(/^2026-11-10T/.test(m.cfg.pickup))m.cfg.pickup="2026-11-13"+m.cfg.pickup.slice(10);return m;}}catch(e){storageOK=false;}return clone(DEF);}
+  /* one-off updates to the breeder's dates: born 12 Sep (corrected 2 Nov; earlier 15 and 18 Sep), home 13 Nov */
+  if(m.cfg.dob==="2026-09-15"||m.cfg.dob==="2026-09-18")m.cfg.dob="2026-09-12";if(/^2026-11-10T/.test(m.cfg.pickup))m.cfg.pickup="2026-11-13"+m.cfg.pickup.slice(10);return m;}}catch(e){storageOK=false;}return clone(DEF);}
 let S=load();
 let saveT;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true;}catch(e){storageOK=false;}
@@ -147,7 +147,7 @@ const PREP=[
   ["st2","Microchip number from the breeder",null,true],
   ["st3","Registration papers attached","NSW Pet Registry certificate once the transfer and $84 fee are done; send the breeder's papers in the meantime"],
   ["st4","Colour photo of Oreo attached"],
-  ["st5","Breed, colour and age filled in","F1 Cavoodle; chocolate and white with tan markings; born 18 Sep 2026"],
+  ["st5","Breed, colour and age filled in","F1 Cavoodle; chocolate and tan pied; born 12 Sep 2026"],
   ["st6","Height and weight at full size filled in","Breeder's estimate: about 40 cm and 10 kg"],
   ["st7","Owners Comments: commit to desexing at the age your vet recommends","The by-law requires dogs to be desexed"],
   ["st8","Committee interest declared; you stay out of the vote on your own application"],
@@ -329,7 +329,7 @@ function updateProgress(){
 
 /* ---------------- dashboard ---------------- */
 function vaxPlan(){
-  const dob=pd(S.cfg.dob)||new Date(2026,8,18),p=pd(S.cfg.pickup);
+  const dob=pd(S.cfg.dob)||new Date(2026,8,12),p=pd(S.cfg.pickup);
   const L1=pd(S.dates.lepto1),C5f=pd(S.dates.c5b);
   const plan=[
    {id:"c3",name:"C3 (parvo, distemper, hepatitis)",by:"The breeder's vet",from:add(dob,42),to:add(dob,56)},
@@ -342,12 +342,12 @@ function vaxPlan(){
   ];
   return plan;
 }
-function parkDay(){const C5f=pd(S.dates.c5b);const dob=pd(S.cfg.dob)||new Date(2026,8,18);return add(C5f||add(dob,112),14);}
+function parkDay(){const C5f=pd(S.dates.c5b);const dob=pd(S.cfg.dob)||new Date(2026,8,12);return add(C5f||add(dob,112),14);}
 function renderTimeline(){
-  const dob=pd(S.cfg.dob)||new Date(2026,8,18),p=pd(S.cfg.pickup),m=pd(S.cfg.momLeaves),t=today();
+  const dob=pd(S.cfg.dob)||new Date(2026,8,12),p=pd(S.cfg.pickup),m=pd(S.cfg.momLeaves),t=today();
   const L1=pd(S.dates.lepto1);
   const ev=[
-   [p,"Delivery to Waitara","8 weeks old · pet transport from the breeder"],
+   [p,"Delivery to Waitara","Almost 9 weeks old · pet transport from the breeder"],
    [p&&add(p,3),"Own-vet health check deadline","Within 72 h of delivery"],
    [new Date(2026,10,13),"Balance $3,500 due","Pay through RightPaw before dispatch"],
    [add(dob,70),"C5 #1 + Lepto #1 window opens","10–12 weeks"],
@@ -473,7 +473,7 @@ function dateRow(id,name,by,from,to){
 function renderVet(){
   const head='<thead><tr><th>Item</th><th>Due window</th><th>Date given</th><th>Status</th></tr></thead>';
   $("#vaxTbl").innerHTML=head+"<tbody>"+vaxPlan().map(v=>dateRow(v.id,v.name,v.by,v.from,v.to)).join("")+"</tbody>";
-  const dob=pd(S.cfg.dob)||new Date(2026,8,18);
+  const dob=pd(S.cfg.dob)||new Date(2026,8,12);
   const w=[];
   [8,10,12].forEach(n=>w.push([`w${n}`,`Week ${n}`,n===8?"Breeder may give this; check handover":"Every 2 weeks to 12 wks",add(dob,n*7)]));
   [4,5,6].forEach(m=>w.push([`wm${m}`,`Month ${m}`,"Monthly to 6 months",addM(dob,m)]));
@@ -488,7 +488,7 @@ function renderVet(){
 /* ---------------- weights ---------------- */
 function renderWeights(){
   const W=S.weights.slice().sort((a,b)=>a.d.localeCompare(b.d));
-  const dob=pd(S.cfg.dob)||new Date(2026,8,18);
+  const dob=pd(S.cfg.dob)||new Date(2026,8,12);
   $("#wTbl").innerHTML=W.length?`<thead><tr><th>Date</th><th>Age</th><th>kg</th><th>Tick-chew band</th><th></th></tr></thead><tbody>${W.slice().reverse().map(e=>{
     const d=pd(e.d),wk=Math.floor(days(dob,d)/7),kg=+e.kg;
     const band=S.cfg.tickProd==="NexGard Spectra"?(kg<2?"Too light (min 2 kg)":kg<=3.5?"2–3.5 kg":kg<=7.5?"3.6–7.5 kg":kg<=15?"7.6–15 kg":"15.1+ kg")
