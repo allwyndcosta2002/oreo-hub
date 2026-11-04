@@ -16,7 +16,7 @@ const icons=()=>{try{window.lucide&&lucide.createIcons();}catch(e){}};
 /* ---------------- state ---------------- */
 const KEY="oreoHub.v1";
 const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],social:{},notes:[],
-  cfg:{pickup:"2026-11-13T10:00",dob:"2026-09-12",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
+  cfg:{pickup:"2026-11-08T10:00",dob:"2026-09-12",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DRE=/^\d{4}-\d{2}-\d{2}$/;
 const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
@@ -43,8 +43,11 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
 let storageOK=true;
 function load(){try{const r=localStorage.getItem(KEY);if(r){const m=merge(JSON.parse(r));
   /* one-off updates to the breeder's dates: born 12 Sep (corrected 2 Nov; earlier 15 and 18 Sep), home 13 Nov */
-  if(m.cfg.dob==="2026-09-15"||m.cfg.dob==="2026-09-18")m.cfg.dob="2026-09-12";if(/^2026-11-10T/.test(m.cfg.pickup))m.cfg.pickup="2026-11-13"+m.cfg.pickup.slice(10);return m;}}catch(e){storageOK=false;}return clone(DEF);}
+  if(m.cfg.dob==="2026-09-15"||m.cfg.dob==="2026-09-18")m.cfg.dob="2026-09-12";if(/^2026-11-1[03]T/.test(m.cfg.pickup))m.cfg.pickup="2026-11-08"+m.cfg.pickup.slice(10);
+  /* records from the 4 Nov vet check, added if not already logged */
+  if(!m.dates.c3)m.dates.c3="2026-11-04";if(!m.weights.some(w=>w.d==="2026-11-04"))m.weights.push({d:"2026-11-04",kg:1.9});return m;}}catch(e){storageOK=false;}return clone(DEF);}
 let S=load();
+if(!S.dates.c3)S.dates.c3="2026-11-04";if(!S.weights.length)S.weights.push({d:"2026-11-04",kg:1.9});
 let saveT;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true;}catch(e){storageOK=false;}
   $("#storageWarn").classList.toggle("hidden",storageOK);},150);}
@@ -54,7 +57,7 @@ function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");cl
 const LISTS={
  pay:{title:"Payments",items:[
   ["pay1","Deposit $612 paid through RightPaw (25 Oct)"],
-  ["pay2","Balance $3,500 paid through RightPaw (due 13 Nov)",null,true],
+  ["pay2","Balance $3,500 paid through RightPaw before he leaves on 8 Nov",null,true],
   ["pay3","Transport company paid / invoice saved"],
   ["pay4","Receipts saved (RightPaw dashboard)"]]},
  transport:{title:"Transporter",items:[
@@ -332,10 +335,10 @@ function vaxPlan(){
   const dob=pd(S.cfg.dob)||new Date(2026,8,12),p=pd(S.cfg.pickup);
   const L1=pd(S.dates.lepto1),C5f=pd(S.dates.c5b);
   const plan=[
-   {id:"c3",name:"C3 (parvo, distemper, hepatitis)",by:"The breeder's vet",from:add(dob,42),to:add(dob,56)},
+   {id:"c3",name:"C3: Vanguard C3 (Zoetis), batch 7033-00005",by:"West Cessnock Vet Hospital, Dr Fergus Ryan · 1.9 kg",from:add(dob,42),to:add(dob,56)},
    {id:"vetchk",name:"Own-vet health check",by:"Your vet",from:p||add(dob,56),to:add(p||add(dob,56),3)},
-   {id:"c5a",name:"C5 #1 (adds kennel cough)",by:"Your vet",from:add(dob,70),to:add(dob,84)},
-   {id:"lepto1",name:"Leptospirosis #1",by:"Same visit as C5 #1",from:add(dob,70),to:add(dob,84)},
+   {id:"c5a",name:"C5 #1 (adds kennel cough)",by:"Due 2 Dec 2026 per vaccination card; ask about Vanguard early finish",from:new Date(2026,11,2),to:new Date(2026,11,5)},
+   {id:"lepto1",name:"Leptospirosis #1",by:"Ask for it at the 2 Dec visit",from:new Date(2026,11,2),to:new Date(2026,11,5)},
    {id:"lepto2",name:"Leptospirosis #2",by:"2–4 weeks after lepto #1",from:L1?add(L1,14):add(dob,84),to:L1?add(L1,28):add(dob,112)},
    {id:"c5b",name:"C5 final puppy dose",by:"At or after 16 weeks (WSAVA)",from:add(dob,112),to:add(dob,126)},
    {id:"annual",name:"First annual booster (C5 + lepto)",by:"12 months after final dose",from:addM(C5f||add(dob,112),12),to:add(addM(C5f||add(dob,112),12),28)}
@@ -349,7 +352,7 @@ function renderTimeline(){
   const ev=[
    [p,"Delivery to Waitara","Almost 9 weeks old · pet transport from the breeder"],
    [p&&add(p,3),"Own-vet health check deadline","Within 72 h of delivery"],
-   [new Date(2026,10,13),"Balance $3,500 due","Pay through RightPaw before dispatch"],
+   [p,"Balance $3,500 due","Pay through RightPaw before dispatch"],
    [add(dob,70),"C5 #1 + Lepto #1 window opens","10–12 weeks"],
    [p&&add(p,28),"NSW registration late-fee date","Pay the $84 before this"],
    [p&&add(p,42),"Breeder's free insurance ends","Ongoing cover in place by now"],
