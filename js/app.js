@@ -40,14 +40,21 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
   if(["Simparica Trio","NexGard Spectra","Other (vet-prescribed)"].includes(c.tickProd))D.tickProd=c.tickProd;
   D.vetName=str(c.vetName,80);D.vetPhone=str(c.vetPhone,30);D.trName=str(c.trName,80);D.trPhone=str(c.trPhone,30);D.brPhone=str(c.brPhone,30);
   return d;}
+/* records from the breeder's paperwork; filled in only where nothing is logged yet */
+function applyKnown(m){
+  if(!m.dates.c3)m.dates.c3="2026-11-04";
+  if(!m.weights.some(w=>w.d==="2026-11-04"))m.weights.push({d:"2026-11-04",kg:1.9});
+  [["w2","2026-09-26"],["w4","2026-10-10"],["w6","2026-10-24"]].forEach(([k,d])=>{if(!m.dates[k])m.dates[k]=d;});
+  if(!m.dates.w8&&new Date()>=new Date(2026,10,7))m.dates.w8="2026-11-07";
+}
 let storageOK=true;
 function load(){try{const r=localStorage.getItem(KEY);if(r){const m=merge(JSON.parse(r));
   /* one-off updates to the breeder's dates: born 12 Sep (corrected 2 Nov; earlier 15 and 18 Sep), home 13 Nov */
   if(m.cfg.dob==="2026-09-15"||m.cfg.dob==="2026-09-18")m.cfg.dob="2026-09-12";if(/^2026-11-1[03]T/.test(m.cfg.pickup))m.cfg.pickup="2026-11-08"+m.cfg.pickup.slice(10);
   /* records from the 4 Nov vet check, added if not already logged */
-  if(!m.dates.c3)m.dates.c3="2026-11-04";if(!m.weights.some(w=>w.d==="2026-11-04"))m.weights.push({d:"2026-11-04",kg:1.9});return m;}}catch(e){storageOK=false;}return clone(DEF);}
+  applyKnown(m);return m;}}catch(e){storageOK=false;}return clone(DEF);}
 let S=load();
-if(!S.dates.c3)S.dates.c3="2026-11-04";if(!S.weights.length)S.weights.push({d:"2026-11-04",kg:1.9});
+applyKnown(S);
 let saveT;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true;}catch(e){storageOK=false;}
   $("#storageWarn").classList.toggle("hidden",storageOK);},150);}
@@ -117,7 +124,7 @@ const PREP=[
   ["b5","House rule printed on the door: \"Door open = Oreo on lead\"",null,true],
   ["b6","Shade for summer tiles (they burn paws above ~30 °C)"],
   ["b7","X-pen (8 panels, 60–80 cm high) in the laundry or bathroom"],
-  ["b8","Two real-grass trays (e.g. Potty Plant-style hydroponic turf) + waterproof base","Rotate; replace turf every 1–3 weeks"],
+  ["b8","Real-grass potty: Potty Plant Go subscription (every 2 weeks), ordered 5 Nov","Order PP766261; first delivery next week"],
   ["b9","No fabric pee pads; rugs and bath mats rolled up for now","Fabric teaches \"soft = toilet\""],
   ["b10","Enzyme cleaner stocked (not ammonia-based)"],
   ["b11","Strata/building manager told about the removable balcony mesh"]]},
@@ -353,7 +360,8 @@ function renderTimeline(){
    [p,"Delivery to Waitara","Almost 9 weeks old · pet transport from the breeder"],
    [p&&add(p,3),"Own-vet health check deadline","Within 72 h of delivery"],
    [p,"Balance $3,500 due","Pay through RightPaw before dispatch"],
-   [add(dob,70),"C5 #1 + Lepto #1 window opens","10–12 weeks"],
+   [add(dob,70),"10-week worming due","Breeder's schedule; covered if the monthly chew has started"],
+   [new Date(2026,11,2),"C5 #1 + Lepto #1 (vet booked)","Due date on the vaccination card"],
    [p&&add(p,28),"NSW registration late-fee date","Pay the $84 before this"],
    [p&&add(p,42),"Breeder's free insurance ends","Ongoing cover in place by now"],
    [L1?add(L1,14):add(dob,84),"Lepto #2 window opens","2–4 weeks after lepto #1"],
@@ -477,10 +485,19 @@ function renderVet(){
   const head='<thead><tr><th>Item</th><th>Due window</th><th>Date given</th><th>Status</th></tr></thead>';
   $("#vaxTbl").innerHTML=head+"<tbody>"+vaxPlan().map(v=>dateRow(v.id,v.name,v.by,v.from,v.to)).join("")+"</tbody>";
   const dob=pd(S.cfg.dob)||new Date(2026,8,12);
-  const w=[];
-  [8,10,12].forEach(n=>w.push([`w${n}`,`Week ${n}`,n===8?"Breeder may give this; check handover":"Every 2 weeks to 12 wks",add(dob,n*7)]));
-  [4,5,6].forEach(m=>w.push([`wm${m}`,`Month ${m}`,"Monthly to 6 months",addM(dob,m)]));
-  [9,12].forEach(m=>w.push([`wm${m}`,`Month ${m}`,"Then every 3 months for life",addM(dob,m)]));
+  const w=[
+   ["w2","2 weeks · Drontal Puppy liquid","Given by the breeder",add(dob,14)],
+   ["w4","4 weeks · Drontal Puppy liquid","Given by the breeder",add(dob,28)],
+   ["w6","6 weeks · Drontal Puppy liquid","Given by the breeder",add(dob,42)],
+   ["w8","8 weeks · Drontal Puppy liquid","Breeder's dose on 7 Nov, the day before he leaves",add(dob,56)],
+   ["w10","10 weeks · due 21 Nov","Breeder says he needs worming; a monthly chew (Simparica Trio or NexGard Spectra) covers it if already started",add(dob,70)],
+   ["w12","12 weeks","Covered by the monthly chew; otherwise worm again",add(dob,84)],
+   ["wm3","3 months","Then monthly (breeder's schedule)",addM(dob,3)],
+   ["wm4","Month 4","Monthly",addM(dob,4)],
+   ["wm5","Month 5","Monthly",addM(dob,5)],
+   ["wm6","6 months","Then every 3 months",addM(dob,6)],
+   ["wm9","Month 9","Every 3 months",addM(dob,9)],
+   ["wm12","12 months","Every 3 months for life",addM(dob,12)]];
   $("#wormTbl").innerHTML=head+"<tbody>"+w.map(([id,n,by,d])=>dateRow(id,n,by,d,add(d,3))).join("")+"</tbody>";
   const p=pd(S.cfg.pickup)||add(dob,56);
   const tk=[];for(let i=0;i<7;i++){const d=addM(p,i);tk.push([`tk${i}`,`${S.cfg.tickProd} #${i+1}`,i===0?"First dose: confirm with breeder/vet":"Same date each month",d]);}
