@@ -582,6 +582,7 @@ function exportUI(){
    <div class="flex gap-2 flex-wrap mt-3"><button class="btn primary" id="expCopy" type="button"><i data-lucide="copy"></i>Copy</button>
    <button class="btn" id="expDl" type="button"><i data-lucide="download"></i>Download .json</button></div>
    <p class="muted text-xs mt-2">If Download is refused on your device, Copy always works.</p>`);
+  {const cc=$("#copyChip");if(cc)cc.onclick=async()=>{try{await navigator.clipboard.writeText("991001008488407");toast("Microchip number copied");}catch(e){toast("991001008488407");}};}
   $("#expCopy").onclick=async()=>{try{await navigator.clipboard.writeText(json);toast("Copied backup");}catch(e){const t=$("#expTxt");t.focus();t.select();toast("Select-all is on: copy manually");}};
   $("#expDl").onclick=async()=>{const fn=`oreo-hub-backup-${iso(today())}.json`;
     try{const dl=window.claude&&typeof claude.use==="function"?await claude.use("downloads"):null;
