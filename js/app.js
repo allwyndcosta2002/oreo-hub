@@ -15,7 +15,7 @@ const icons=()=>{try{window.lucide&&lucide.createIcons();}catch(e){}};
 
 /* ---------------- state ---------------- */
 const KEY="oreoHub.v1";
-const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],social:{},notes:[],
+const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],potty:[],social:{},notes:[],
   cfg:{pickup:"2026-11-08T10:00",dob:"2026-09-12",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DRE=/^\d{4}-\d{2}-\d{2}$/;
@@ -30,6 +30,7 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
   if(obj(o.social))for(const k in o.social){const n=num(o.social[k],0,5);if(okId(k)&&n!==null)d.social[k]=Math.round(n);}
   if(Array.isArray(o.weights))d.weights=o.weights.filter(e=>e&&DRE.test(e.d)&&num(e.kg,0.1,40)!==null).slice(0,500).map(e=>({d:e.d,kg:num(e.kg,0.1,40)}));
   if(Array.isArray(o.alone))d.alone=o.alone.filter(e=>e&&DRE.test(e.d)&&num(e.min,0.1,1440)!==null).slice(0,3000).map((e,i)=>({d:e.d,min:num(e.min,0.1,1440),how:["calm","mild","distress"].includes(e.how)?e.how:"mild",t:Number.isFinite(+e.t)?Math.floor(+e.t):Date.now()+i}));
+  if(Array.isArray(o.potty))d.potty=o.potty.filter(e=>e&&Number.isFinite(+e.t)&&["wee","poo","acc","trig"].includes(e.k)).slice(-5000).map(e=>({t:Math.floor(+e.t),k:e.k}));
   if(Array.isArray(o.notes))d.notes=o.notes.filter(e=>e&&typeof e.body==="string").slice(0,2000).map((e,i)=>({t:Number.isFinite(+e.t)?Math.floor(+e.t):Date.now()+i,d:DRE.test(e.d)?e.d:iso(today()),
     cat:["general","vet","health","behaviour","transport","shopping"].includes(e.cat)?e.cat:"general",title:str(e.title,120),body:str(e.body,5000),pin:e.pin===true}));
   const c=obj(o.cfg)?o.cfg:{},D=d.cfg;
@@ -110,11 +111,11 @@ const LISTS={
 };
 const PREP=[
  {id:"sleep",icon:"bed",title:"Sleep & crate",items:[
-  ["s1","Crate ~61 cm (24\") with divider","Divider keeps the space small so he won't toilet in one end"],
+  ["s1","Furniture crate in the sitting room (day den) with the bed filling the floor","No spare corner means he won't toilet at one end"],
   ["s2","Crate cover + washable vet-bed"],
   ["s3","Heartbeat-style snuggle toy + wrapped warm water bottle"],
   ["s4","White-noise app or machine (masks Pacific Hwy and lift noise)"],
-  ["s5","Crate set up beside your bed for week 1"],
+  ["s5","Small crate or penned bed beside your bed for the first 2–4 weeks of nights"],
   ["s6","Baby gate(s) for the laundry/bathroom doorway"]]},
  {id:"balcony",icon:"shield-alert",title:"4th-floor balcony & real-grass potty",crit:true,items:[
   ["b1","Measure every gap: under glass, between balusters, beside drains","Anything over ~5 cm counts as passable",true],
@@ -221,8 +222,8 @@ const SCHED={
   ["18:30","Meal 4 → toilet","Shift worker","meal"],
   ["19:00","Capturing Calmness on his mat during family dinner","Anyone","train"],
   ["19:30","Nap","—","nap"],
-  ["21:30","Toilet, quiet play, tick check","You","potty"],
-  ["22:30","Last toilet → crate beside your bed","You","potty"],
+  ["21:30","Toilet, quiet play, tick check · lift the water bowl","You","potty"],
+  ["22:30","Last toilet → carried to his bed or crate beside your bed","You","potty"],
   ["~02:30","Silent toilet trip (first ~2 weeks only)","You","potty"]]},
  jan:{note:"At 4–6 months, keep any stretch alone to about 3–4 hours before a toilet break. Ground walks only from 14 days after the final C5.",rows:[
   ["06:30","Wake → toilet (grass tray, or lift down once vaccinated)","You","potty"],
@@ -426,6 +427,47 @@ function renderAlone(){
    :`<tbody><tr><td class="muted">No reps yet. Day 1 target: three 30-second gaps behind the gate.</td></tr></tbody>`;
 }
 
+
+/* ---------------- toilet tracker & crate table ---------------- */
+function ageWeeksExact(){const dob=pd(S.cfg.dob);return dob?days(dob,today())/7:8;}
+function pottyGap(){const w=ageWeeksExact();return w<10?45:w<12?60:w<16?90:w<24?120:180;}
+const CRATE=[
+ [8,10,"8–10 weeks","Naps of 1–2 h once he's asleep; awake with door closed only a few minutes","Up to 3–4 h at a time","1–2 (around 1–2 am and 5 am)"],
+ [10,12,"10–12 weeks","Up to 2 h","Up to 4–5 h","1"],
+ [12,16,"3–4 months","Up to 2–3 h","Up to 5–7 h","0–1"],
+ [16,26,"4–6 months","Up to 3–4 h","7–8 h, usually sleeps through","0"],
+ [26,999,"6 months +","No more than ~4 h at a stretch","Full night","0"]];
+function renderCrate(){const w=ageWeeksExact();
+  $("#crateTbl").innerHTML=`<thead><tr><th>Age</th><th>Daytime in the crate</th><th>Overnight stretch</th><th>Night toilet trips</th></tr></thead><tbody>${CRATE.map(r=>
+   `<tr class="si ${w>=r[0]&&w<r[1]?"hl":""}"><td><strong>${r[2]}</strong></td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join("")}</tbody>`;}
+const PK={wee:'<span class="pill ok">Wee on grass</span>',poo:'<span class="pill ok">Poo on grass</span>',acc:'<span class="pill danger">Accident</span>',trig:'<span class="pill mute">Woke / ate / drank</span>'};
+const hm=t=>new Date(t).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"});
+function pottyDue(){const L=S.potty;if(!L.length)return null;
+  const lastWee=[...L].reverse().find(e=>e.k==="wee"||e.k==="acc");
+  const lastTrig=[...L].reverse().find(e=>e.k==="trig");
+  let due=lastWee?lastWee.t+pottyGap()*6e4:null;
+  if(lastTrig&&(!lastWee||lastTrig.t>lastWee.t)){const td=lastTrig.t+10*6e4;due=due===null?td:Math.min(due,td);}
+  return due;}
+function renderPottyNext(){const el=$("#pottyNext");if(!el)return;
+  $("#pottyAge").textContent=`Every ~${pottyGap()} min while awake`;
+  const due=pottyDue();
+  if(due===null){el.innerHTML="<strong>No trips logged yet.</strong> Tap \"Wee on grass\" after his first wee and the countdown starts.";el.className="note si";return;}
+  const m=Math.round((due-Date.now())/6e4);
+  if(m<=0){el.innerHTML=`<strong>Grass trip due now</strong>${m<-1?` (${-m} min overdue)`:""}. If he's fast asleep, let him sleep and go the moment he wakes.`;el.className="note warn si";}
+  else{el.innerHTML=`<strong>Next grass trip in ${m} min</strong> (about ${hm(due)}). Go sooner if you see sniffing or circling.`;el.className="note si";}}
+function renderPotty(){
+  const t0=today().getTime(),T=S.potty.filter(e=>e.t>=t0);
+  const g=T.filter(e=>e.k==="wee"||e.k==="poo").length,a=T.filter(e=>e.k==="acc").length;
+  const lastAcc=[...S.potty].reverse().find(e=>e.k==="acc");
+  const sinceAcc=lastAcc?Math.floor((Date.now()-lastAcc.t)/864e5):null;
+  $("#pottyStats").innerHTML=`<div><b>${g}</b><span>on the grass today</span></div><div><b>${a}</b><span>accidents today</span></div>
+   <div><b>${g+a?Math.round(100*g/(g+a))+"%":"–"}</b><span>success today</span></div><div><b>${sinceAcc===null?"–":sinceAcc}</b><span>days since last accident</span></div>`;
+  const L=T.slice().reverse();
+  $("#pottyTbl").innerHTML=L.length?`<thead><tr><th>Today</th><th>What</th><th></th></tr></thead><tbody>${L.slice(0,40).map(e=>
+   `<tr><td class="time">${hm(e.t)}</td><td>${PK[e.k]}</td><td class="text-right"><button class="ibtn" data-del-potty="${e.t}" aria-label="Delete entry"><i data-lucide="trash-2" style="width:15px;height:15px"></i></button></td></tr>`).join("")}</tbody>`
+   :`<tbody><tr><td class="muted">Nothing logged today.</td></tr></tbody>`;
+  renderPottyNext();renderCrate();}
+
 /* ---------------- social ---------------- */
 function renderSocial(){
   let done=0,tot=0;
@@ -627,6 +669,9 @@ document.addEventListener("click",e=>{
   if(b.dataset.sched){S.cfg.schedule=b.dataset.sched;save();renderSched();if($("#q").value)runSearch();return;}
   if(b.dataset.tox){toxFilter=b.dataset.tox;$$("[data-tox]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderTox();return;}
   if(b.dataset.soc){const id=b.dataset.soc;S.social[id]=Math.max(0,Math.min(5,(S.social[id]||0)+(+b.dataset.d)));save();renderSocial();if($("#q").value)runSearch();return;}
+  if(b.dataset.potty){S.potty.push({t:Date.now(),k:b.dataset.potty});if(S.potty.length>5000)S.potty=S.potty.slice(-5000);save();renderPotty();icons();
+    toast({wee:"Wee logged. Good boy!",poo:"Poo logged. Good boy!",acc:"Accident logged: shorten the gaps",trig:"Next trip in 10 min"}[b.dataset.potty]);return;}
+  if(b.dataset.delPotty){S.potty=S.potty.filter(x=>String(x.t)!==b.dataset.delPotty);save();renderPotty();icons();return;}
   if(b.dataset.delAlone){S.alone=S.alone.filter(x=>String(x.t)!==b.dataset.delAlone);save();renderAlone();icons();tick();return;}
   if(b.dataset.delW){S.weights=S.weights.filter(x=>x.d!==b.dataset.delW);save();renderWeights();icons();return;}
   if(noteClick(b))return;
@@ -692,12 +737,13 @@ function noteClick(b){
 /* ---------------- boot ---------------- */
 function renderAll(){
   $$("[data-cfg]").forEach(el=>{const v=S.cfg[el.dataset.cfg];if(v!==undefined&&el.type!=="range")el.value=v;});
-  renderLists();renderTimeline();renderSched();renderAlone();renderSocial();renderCalc();renderTox();renderVet();renderWeights();renderNotes();updateProgress();tick();icons();
+  renderLists();renderTimeline();renderSched();renderAlone();renderPotty();renderSocial();renderCalc();renderTox();renderVet();renderWeights();renderNotes();updateProgress();tick();icons();
   if($("#q").value)runSearch();
 }
 $("#aloneDate").value=iso(today());$("#noteDate").value=iso(today());$("#wDate").value=iso(today());
 renderAll();
 setInterval(tick,1000);
+setInterval(renderPottyNext,20000);
 const h=location.hash.slice(1);if(h&&$(`[data-panel="${h}"]`))showTab(h);
 $("#storageWarn").classList.toggle("hidden",storageOK);
 })();

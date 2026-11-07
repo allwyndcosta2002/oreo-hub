@@ -384,7 +384,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
     <div class="card prose">
       <h3><i data-lucide="moon"></i>First 72 hours: night survival</h3>
       <ul>
-        <li class="si"><strong>Crate beside your bed</strong> for the first week or two. Your fingers at the door and your breathing nearby do more than any gadget.</li>
+        <li class="si"><strong>Night bed or small crate beside your bed</strong> for the first 2–4 weeks (the big crate is his daytime den). Your fingers at the door and your breathing nearby do more than any gadget.</li>
         <li class="si"><strong>Scent and warmth:</strong> the breeder's litter blanket, a heartbeat-style snuggle toy, and a warm (not hot) wrapped water bottle. Skip microwaved wheat bags: they hot-spot and burn.</li>
         <li class="si"><strong>Don't "cry it out" at 8 weeks.</strong> He has just lost his mother and littermates. Answer cries with a calm, low voice and a hand at the crate. Settling him isn't spoiling him; panic teaches the crate is scary.</li>
         <li class="si"><strong>One silent night toilet trip</strong> (around 2–3 am) for roughly the first two weeks: carry him to the grass tray, no talking or play, straight back to bed.</li>
@@ -444,6 +444,83 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
     <p class="muted text-sm mt-2" id="schedNote"></p>
   </div>
 
+  <div class="card feature mt-4" id="pottyCard">
+    <div class="grp-head"><h3 class="!mb-0"><i data-lucide="droplets"></i>Toilet tracker</h3><span class="pill mute" id="pottyAge"></span></div>
+    <p class="muted text-sm mt-1 mb-3">Tap the moment it happens. The app works out when the next grass trip is due from his age, his last wee, and when he last woke, ate or drank.</p>
+    <div class="note si" id="pottyNext" aria-live="polite"></div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+      <button class="btn primary" type="button" data-potty="wee"><i data-lucide="check"></i>Wee on grass</button>
+      <button class="btn primary" type="button" data-potty="poo"><i data-lucide="check-check"></i>Poo on grass</button>
+      <button class="btn ghost" type="button" data-potty="trig"><i data-lucide="alarm-clock"></i>Woke / ate / drank</button>
+      <button class="btn ghost" type="button" data-potty="acc"><i data-lucide="x"></i>Accident</button>
+    </div>
+    <div class="kv mt-4" id="pottyStats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"></div>
+    <div class="tbl-wrap mt-3"><table class="tbl" id="pottyTbl"></table></div>
+    <p class="muted text-xs mt-2">Saved on this phone only. Each person's phone keeps its own log, so ideally one phone logs for the house.</p>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card prose">
+      <h3><i data-lucide="footprints"></i>When to take him to the grass</h3>
+      <p class="muted text-sm mb-2">Toilet training is about timing, not catching him in the act. Take him out at every one of these moments:</p>
+      <ol>
+        <li class="si"><strong>The moment he wakes up</strong>, from a nap or in the morning. Carry him straight there; don't let him walk or play first.</li>
+        <li class="si"><strong>5–15 minutes after every meal</strong> (poo usually follows within 15–30 minutes).</li>
+        <li class="si"><strong>After a big drink.</strong></li>
+        <li class="si"><strong>During and after play</strong>: every 15–20 minutes of play, and when play stops.</li>
+        <li class="si"><strong>When he comes out of the crate</strong>, and right before he goes in.</li>
+        <li class="si"><strong>After excitement</strong>: visitors, a bath, a new place.</li>
+        <li class="si"><strong>Every 45–60 minutes while he's awake</strong> at 8–10 weeks, even if none of the above happened.</li>
+        <li class="si"><strong>Last thing before bed</strong>, and once or twice in the night for the first couple of weeks.</li>
+      </ol>
+      <div class="note si mt-2"><strong>Warning signs, go now:</strong> sniffing the floor, circling, suddenly stopping play, whining, wandering off to a corner or towards the balcony door.</div>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="glass-water"></i>Water: don't restrict it in the day</h3>
+      <ul>
+        <li class="si"><strong>Fresh water in the pen all day.</strong> A 2 kg puppy dehydrates quickly, especially on warm days. Holding water back doesn't stop accidents; timing does.</li>
+        <li class="si"><strong>You don't need to see him drink.</strong> The every-45-minutes timetable covers it. If you do see a big drink, tap "Woke / ate / drank" and the tracker brings the next trip forward to 10 minutes.</li>
+        <li class="si"><strong>Lift the bowl about an hour before bedtime</strong> (around 9:30 pm), and offer a small drink at the last toilet trip and when he wakes.</li>
+        <li class="si"><strong>Water in the crate:</strong> not needed for naps or overnight at this age. Give a drink when he comes out.</li>
+        <li class="si"><strong>On hot days</strong>, don't lift the bowl early, and call the vet if he's lethargic with dry, sticky gums.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3><i data-lucide="clock"></i>Crate timings by age</h3>
+    <p class="muted text-sm mb-3">Rule of thumb: he can hold on for about his age in months plus one hour, and less when he's awake and active. These are the longest stretches, not targets. Your row is highlighted.</p>
+    <div class="tbl-wrap"><table class="tbl" id="crateTbl"></table></div>
+    <p class="muted text-sm mt-2">Even as an adult, keep daytime crate time to about 4 hours at a stretch. For a longer workday, use the pen (crate door open, grass tray at the far end) or a dog walker.</p>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+    <div class="card prose">
+      <h3><i data-lucide="home"></i>Two-crate plan: day den and bedside bed</h3>
+      <ul>
+        <li class="si"><strong>Big furniture crate (sitting room):</strong> his daytime den inside the pen. Meals, chews, Kongs and naps happen here, so it means good things. The bed fills the floor, so there's no spare corner to wee in.</li>
+        <li class="si"><strong>Nights, first 2–4 weeks:</strong> a small crate, or a bed fenced with a few pen panels, right beside your bed, with Mandy's blanket. At bedtime: last toilet, then carry him to the bedroom.</li>
+        <li class="si"><strong>Why beside you:</strong> an 8-week puppy alone in another room cries far more, and you won't hear him wake needing the toilet.</li>
+        <li class="si"><strong>Not in your own bed yet:</strong> a fall from that height can hurt a 2 kg puppy, and you'll miss his toilet signals.</li>
+        <li class="si"><strong>Moving to the big crate at night:</strong> once he's slept 5–6 hours without crying or a toilet trip for about a week (usually around 12–14 weeks), switch him to the big crate. For the first 2–3 nights, have someone sleep on the couch nearby.</li>
+      </ul>
+    </div>
+
+    <div class="card prose">
+      <h3><i data-lucide="box"></i>Crate training, step by step</h3>
+      <ol>
+        <li class="si"><strong>Days 1–3:</strong> door open. Feed every meal just inside the crate and toss treats in during the day, so he walks in by choice. Close the door only once he's asleep in there.</li>
+        <li class="si"><strong>Week 1:</strong> close the door while he eats and open it before he finishes. Build to 1–5 minutes after the meal with a chew, you sitting nearby.</li>
+        <li class="si"><strong>Week 2:</strong> 10–30 minutes with a Kong, you in the room, then step out for short moments. This links in with the Mid-January alone protocol below.</li>
+        <li class="si"><strong>Week 3 onwards:</strong> 1–2-hour naps with the door closed and you out of the room.</li>
+        <li class="si"><strong>Once he loves the crate</strong> (goes in by himself), meals can move out into the pen.</li>
+      </ol>
+      <div class="note si mt-2"><strong>Crate rules:</strong> toilet before every crate session · never use it as punishment · take off his harness or collar inside (they can snag) · a light, breathable cover for night and naps, never on hot days, and leave it off if he's more upset with it.</div>
+      <div class="note warn si mt-2"><strong>If he cries:</strong> first rule out a real need. If he just woke or it's been 2+ hours, carry him to the grass, then straight back in calmly with no play. If he's only protesting, talk softly or rest your fingers at the door, and open it after a few seconds of quiet, so calm (not crying) is what opens the door. At 8 weeks, comfort him; don't leave him to cry it out.</div>
+    </div>
+  </div>
+
   <div class="grid gap-4 lg:grid-cols-2 mt-4">
     <div class="card prose">
       <h3><i data-lucide="sprout"></i>Indoor &amp; balcony potty blueprint</h3>
@@ -454,7 +531,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
         <li class="si"><strong>Nothing in 2 minutes?</strong> Back into the pen or crate for 10 minutes, then try again. That's Dunbar's errorless method: he never gets free time with a full bladder.</li>
         <li class="si"><strong>Accidents:</strong> no scolding, no nose-rubbing. Clean with an enzyme cleaner (ammonia-based cleaners smell like urine to him). Shorten the gaps between trips.</li>
         <li class="si"><strong>Grass tray care:</strong> scoop solids at once, rinse daily, replace the turf every 1–3 weeks. Keep two trays and rotate.</li>
-        <li class="si"><strong>Balcony:</strong> not a toilet while there are gaps. After fortification you can move a second tray out there, but every balcony trip is on lead.</li>
+        <li class="si"><strong>Balcony grass corner:</strong> go out with him every time, slide the door shut behind you, and carry him back in. Never leave him out there alone, even inside the little pen (he'll soon climb it). Measure the gap under the glass panels: anything over 5 cm needs mesh. Hot tiles burn paws in afternoon sun, so test with the back of your hand.</li>
+        <li class="si"><strong>Night or bad weather:</strong> a small backup grass tray inside the pen saves trips onto the balcony.</li>
         <li class="si"><strong>After vaccines</strong> (see Vet tab), start pairing the indoor tray with a ground-level grass spot near your building so he can toilet on walks too.</li>
       </ol>
     </div>
