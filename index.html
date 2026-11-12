@@ -739,6 +739,32 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
     </div>
     <p class="muted text-xs mt-3">Ask your own vet to recheck the heart at every visit (Cavalier side) and note Willow's CMT result on his file. Take the vaccination card to every appointment.</p>
   </div>
+  <div class="card feature mt-4" id="earCard">
+    <div class="grp-head"><h3 class="!mb-0"><i data-lucide="ear"></i>Ear treatment: yeast infection</h3><span class="pill warn" id="earPill"></span></div>
+    <p class="muted text-sm mt-1">Own-vet visit <strong>12 Nov 2026</strong>: smelly, itchy ears; swab checked under the microscope showed <strong>yeast</strong>. Ear drops prescribed <strong>twice a day</strong>. Weight <strong>2.2 kg</strong>.</p>
+    <div class="note si mt-3" id="earNext" aria-live="polite"></div>
+    <div class="flex flex-wrap items-end gap-3 mt-3">
+      <div class="fld"><label for="earStart">Course started</label><input class="inp" type="date" id="earStart"></div>
+      <div class="fld"><label for="earDays">Course length (days)</label><input class="inp" type="number" min="1" max="60" id="earDays" style="max-width:110px"></div>
+      <p class="muted text-xs" style="max-width:340px">Set the length to what's on the vet's label (14 days is a placeholder). Finish the full course even once the smell has gone.</p>
+    </div>
+    <div class="tbl-wrap mt-3"><table class="tbl" id="earTbl"></table></div>
+    <ul class="prose text-sm mt-3" style="list-style:disc;padding-left:1.2rem;display:grid;gap:2px">
+      <li class="si"><strong>Giving drops:</strong> lift the ear flap, drop into the canal, massage the base of the ear 20–30 seconds, let him shake, wipe the outer ear. Treat straight after.</li>
+      <li class="si"><strong>Cleaner:</strong> only if the vet said so, and usually 15–30 minutes <em>before</em> the drops so the medicine reaches the skin.</li>
+      <li class="si"><strong>Expect:</strong> smell easing in 2–4 days, scratching settling within about a week. Back to the vet if it's no better in 3–4 days, or he gets red, swollen or painful ears or a head tilt.</li>
+      <li class="si"><strong>Keep ears dry:</strong> no water in his ears at bath time; dry the flaps well. Weekly sniff-and-look check once the course ends.</li>
+      <li class="si"><strong>Insurance:</strong> diagnosed before illness cover starts (15 Nov), so ears will likely count as pre-existing. Declare it when getting quotes.</li>
+    </ul>
+  </div>
+
+  <div class="card mt-4" id="planCard">
+    <h3><i data-lucide="calendar-check"></i>Care plan: now to mid-December</h3>
+    <p class="muted text-sm mb-3">From the 12 Nov vet visit. Weigh him every Thursday on the same scale and add it to the weight log. Your current week is highlighted.</p>
+    <div class="tbl-wrap"><table class="tbl" id="planTbl"></table></div>
+    <div class="note si mt-3"><strong>Book now:</strong> the 10-week visit for around <strong>Sat 21 Nov</strong> (vaccine + first Simparica Trio + ear recheck). Bring the <strong>Simparica Trio Puppy box</strong> (yellow, 1.25–2.5 kg), his vaccination card and the ear drops.</div>
+  </div>
+
   <div class="card mt-4" id="insCard">
     <h3><i data-lucide="shield-check"></i>Pet insurance</h3>
     <div class="note warn si mt-2"><strong>Action: have a paid lifetime policy start on 20 Dec 2026 at the latest.</strong> The free cover ends 19 Dec. Any gap means anything noticed before the new policy starts (a murmur, a knee, an allergy) can be excluded for life.</div>
@@ -817,7 +843,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
   <div class="grid gap-4 lg:grid-cols-2 mt-4">
     <div class="card">
       <h3><i data-lucide="pill"></i>Intestinal worming</h3>
-      <p class="muted text-sm mb-3">Breeder's schedule: Drontal Puppy liquid every 2 weeks from 2 weeks old (last dose 7 Nov), worming due again at 10 weeks (21 Nov), then monthly from 3 months and every 3 months from 6 months. Drontal Puppy liquid and the monthly tick chews don't cover hydatid tapeworm, so ask your vet whether he needs a <strong>praziquantel</strong> wormer (e.g. Milbemax, Drontal Allwormer) as well.</p>
+      <p class="muted text-sm mb-3">Breeder's Drontal Puppy liquid every 2 weeks from 2 weeks old (last dose 7 Nov). <strong>Vet plan (12 Nov):</strong> no separate wormer on 21 Nov, because the first Simparica Trio at the 10-week visit covers roundworm and hookworm; Drontal comes afterwards, on the date the vet gives you. Drontal Puppy liquid and the monthly tick chews don't cover hydatid tapeworm, so ask your vet whether he needs a <strong>praziquantel</strong> wormer (e.g. Milbemax, Drontal Allwormer) as well.</p>
       <div class="tbl-wrap"><table class="tbl" id="wormTbl"></table></div>
     </div>
     <div class="card">

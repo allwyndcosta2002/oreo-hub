@@ -15,7 +15,7 @@ const icons=()=>{try{window.lucide&&lucide.createIcons();}catch(e){}};
 
 /* ---------------- state ---------------- */
 const KEY="oreoHub.v1";
-const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],potty:[],social:{},notes:[],
+const DEF={v:1,checks:{},dates:{},done:{},weights:[],alone:[],potty:[],ear:{start:"2026-11-12",days:14,log:{}},social:{},notes:[],
   cfg:{pickup:"2026-11-08T10:00",dob:"2026-09-12",momLeaves:"2027-01-15",schedule:"nov",curWeight:2.5,calcAge:8,kcal:3900,wetPct:0,wetKcal:1000,tickProd:"Simparica Trio",vetName:"",vetPhone:"",trName:"",trPhone:"",brPhone:""}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const DRE=/^\d{4}-\d{2}-\d{2}$/;
@@ -31,6 +31,8 @@ function merge(o){const d=clone(DEF);if(!o||typeof o!=="object")return d;
   if(Array.isArray(o.weights))d.weights=o.weights.filter(e=>e&&DRE.test(e.d)&&num(e.kg,0.1,40)!==null).slice(0,500).map(e=>({d:e.d,kg:num(e.kg,0.1,40)}));
   if(Array.isArray(o.alone))d.alone=o.alone.filter(e=>e&&DRE.test(e.d)&&num(e.min,0.1,1440)!==null).slice(0,3000).map((e,i)=>({d:e.d,min:num(e.min,0.1,1440),how:["calm","mild","distress"].includes(e.how)?e.how:"mild",t:Number.isFinite(+e.t)?Math.floor(+e.t):Date.now()+i}));
   if(Array.isArray(o.potty))d.potty=o.potty.filter(e=>e&&Number.isFinite(+e.t)&&["wee","poo","acc","trig"].includes(e.k)).slice(-5000).map(e=>({t:Math.floor(+e.t),k:e.k}));
+  if(obj(o.ear)){const E=o.ear;if(DRE.test(E.start))d.ear.start=E.start;const n=num(E.days,1,60);if(n!==null)d.ear.days=Math.round(n);
+    if(obj(E.log))for(const k in E.log)if(DRE.test(k)&&obj(E.log[k]))d.ear.log[k]={a:E.log[k].a===true,p:E.log[k].p===true};}
   if(Array.isArray(o.notes))d.notes=o.notes.filter(e=>e&&typeof e.body==="string").slice(0,2000).map((e,i)=>({t:Number.isFinite(+e.t)?Math.floor(+e.t):Date.now()+i,d:DRE.test(e.d)?e.d:iso(today()),
     cat:["general","vet","health","behaviour","transport","shopping"].includes(e.cat)?e.cat:"general",title:str(e.title,120),body:str(e.body,5000),pin:e.pin===true}));
   const c=obj(o.cfg)?o.cfg:{},D=d.cfg;
@@ -47,6 +49,9 @@ function applyKnown(m){
   if(!m.weights.some(w=>w.d==="2026-11-04"))m.weights.push({d:"2026-11-04",kg:1.9});
   [["w2","2026-09-26"],["w4","2026-10-10"],["w6","2026-10-24"]].forEach(([k,d])=>{if(!m.dates[k])m.dates[k]=d;});
   if(!m.dates.w8&&new Date()>=new Date(2026,10,7))m.dates.w8="2026-11-07";
+  /* own-vet visit 12 Nov 2026: yeast ear infection, 2.2 kg */
+  if(!m.dates.vetchk)m.dates.vetchk="2026-11-12";
+  if(!m.weights.some(w=>w.d==="2026-11-12"))m.weights.push({d:"2026-11-12",kg:2.2});
 }
 let storageOK=true;
 function load(){try{const r=localStorage.getItem(KEY);if(r){const m=merge(JSON.parse(r));
@@ -344,9 +349,9 @@ function vaxPlan(){
   const L1=pd(S.dates.lepto1),C5f=pd(S.dates.c5b);
   const plan=[
    {id:"c3",name:"C3: Vanguard C3 (Zoetis), batch 7033-00005",by:"West Cessnock Vet Hospital, Dr Fergus Ryan · 1.9 kg",from:add(dob,42),to:add(dob,56)},
-   {id:"vetchk",name:"Own-vet health check",by:"Your vet",from:p||add(dob,56),to:add(p||add(dob,56),3)},
-   {id:"c5a",name:"C5 #1 (adds kennel cough)",by:"Due 2 Dec 2026 per vaccination card; ask about Vanguard early finish",from:new Date(2026,11,2),to:new Date(2026,11,5)},
-   {id:"lepto1",name:"Leptospirosis #1",by:"Ask for it at the 2 Dec visit",from:new Date(2026,11,2),to:new Date(2026,11,5)},
+   {id:"vetchk",name:"Own-vet health check",by:"12 Nov: yeast ear infection found, drops twice a day · 2.2 kg",from:p||add(dob,56),to:add(p||add(dob,56),4)},
+   {id:"c5a",name:"10-week vaccine (C5 #1, adds kennel cough)",by:"Own vet: at 10 weeks, from 21 Nov (replaces the 2 Dec date on the card) · same visit: first Simparica Trio + ear recheck",from:add(dob,70),to:add(dob,77)},
+   {id:"lepto1",name:"Leptospirosis #1",by:"Ask whether it's given at the 10-week visit",from:add(dob,70),to:add(dob,77)},
    {id:"lepto2",name:"Leptospirosis #2",by:"2–4 weeks after lepto #1",from:L1?add(L1,14):add(dob,84),to:L1?add(L1,28):add(dob,112)},
    {id:"c5b",name:"C5 final puppy dose",by:"At or after 16 weeks (WSAVA)",from:add(dob,112),to:add(dob,126)},
    {id:"annual",name:"First annual booster (C5 + lepto)",by:"12 months after final dose",from:addM(C5f||add(dob,112),12),to:add(addM(C5f||add(dob,112),12),28)}
@@ -361,8 +366,10 @@ function renderTimeline(){
    [p,"Delivery to Waitara","Almost 9 weeks old · pet transport from the breeder"],
    [p&&add(p,3),"Own-vet health check deadline","Within 72 h of delivery"],
    [p,"Balance $3,500 due","Pay through RightPaw before dispatch"],
-   [add(dob,70),"10-week worming due","Breeder's schedule; covered if the monthly chew has started"],
-   [new Date(2026,11,2),"C5 #1 + Lepto #1 (vet booked)","Due date on the vaccination card"],
+   [new Date(2026,10,12),"Own-vet check: yeast ear infection","Ear drops twice a day for the full course · 2.2 kg"],
+   [add(dob,70),"10-week vet visit","Vaccine + first Simparica Trio + ear recheck · bring the box"],
+   [add(dob,77),"Drontal (date from the vet)","After Simparica, as the vet advises"],
+   [addM(add(dob,70),1),"Simparica Trio #2","Monthly, dosed by his weight that day"],
    [p&&add(p,28),"NSW registration late-fee date","Pay the $84 before this"],
    [new Date(2026,11,1),"Get 2–3 pet insurance quotes","Lifetime cover; include Petcover's continuation"],
    [new Date(2026,11,19),"Free Petcover insurance ends","Paid policy must start 20 Dec: no gap"],
@@ -469,6 +476,44 @@ function renderPotty(){
    :`<tbody><tr><td class="muted">Nothing logged today.</td></tr></tbody>`;
   renderPottyNext();renderCrate();}
 
+
+/* ---------------- ear drops & care plan ---------------- */
+function earDays(){const st=pd(S.ear.start)||today(),n=S.ear.days||14;const a=[];for(let i=0;i<n;i++)a.push(add(st,i));return a;}
+function renderEar(){
+  if(!$("#earTbl"))return;
+  $("#earStart").value=S.ear.start;$("#earDays").value=S.ear.days;
+  const D=earDays(),t=iso(today());let given=0;
+  D.forEach(d=>{const L=S.ear.log[iso(d)];if(L){if(L.a)given++;if(L.p)given++;}});
+  const total=D.length*2,end=D[D.length-1];
+  $("#earPill").textContent=`${given}/${total} doses`;
+  $("#earTbl").innerHTML=`<thead><tr><th>Day</th><th>Date</th><th class="text-center">Morning</th><th class="text-center">Evening</th></tr></thead><tbody>${D.map((d,i)=>{const k=iso(d),L=S.ear.log[k]||{};
+    return `<tr class="${k===t?"hl":""}"><td>${i+1}</td><td class="num whitespace-nowrap">${d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}</td>
+    <td class="text-center"><label class="ck" style="justify-content:center;border:0;padding:2px"><input type="checkbox" data-ear="${k}|a" ${L.a?"checked":""} aria-label="Morning dose ${k}"></label></td>
+    <td class="text-center"><label class="ck" style="justify-content:center;border:0;padding:2px"><input type="checkbox" data-ear="${k}|p" ${L.p?"checked":""} aria-label="Evening dose ${k}"></label></td></tr>`;}).join("")}</tbody>`;
+  renderEarNext();}
+function renderEarNext(){const el=$("#earNext");if(!el)return;const D=earDays(),now=new Date(),k=iso(today());
+  const st=D[0],end=D[D.length-1];
+  if(today()<st){el.innerHTML=`<strong>Course starts ${fmt(st)}.</strong>`;el.className="note si mt-3";return;}
+  if(today()>end){el.innerHTML=`<strong>Course finished ${fmt(end)}.</strong> Ask at the recheck whether to stop or continue, then start weekly ear checks.`;el.className="note si mt-3";return;}
+  const L=S.ear.log[k]||{},pm=now.getHours()>=12;
+  let msg,cls="note si mt-3";const h=now.getHours();
+  if(L.a&&L.p)msg="<strong>Both doses done today.</strong> Good boy, Oreo.";
+  else if(L.p)msg="<strong>Evening dose done.</strong> Next: morning drops tomorrow.";
+  else if(!pm){msg=L.a?"<strong>Morning done.</strong> Evening drops due from about 7 pm.":"<strong>Morning drops due now.</strong> Tick below once given.";if(!L.a)cls="note warn si mt-3";}
+  else if(h>=17){msg="<strong>Evening drops due now.</strong> Tick below once given."+(L.a?"":" (Morning dose not ticked: don't give two together.)");cls="note warn si mt-3";}
+  else msg=L.a?"<strong>Morning done.</strong> Evening drops due from about 7 pm.":"<strong>Morning dose not ticked.</strong> If you missed it, give it now and the evening one at least 6 hours later. Never double up.";
+  el.innerHTML=msg+` <span class="muted">Day ${days(st,today())+1} of ${D.length} · ends ${fmt(end)}.</span>`;el.className=cls;}
+function renderPlan(){if(!$("#planTbl"))return;const dob=pd(S.cfg.dob)||new Date(2026,8,12),v10=add(dob,70),t=today();
+  const W=[
+   [new Date(2026,10,12),"12–18 Nov","Ear drops morning and evening, tick each one · <strong>book the 10-week visit</strong> for about 21 Nov · keep feeding 85–90 g/day","12 Nov: 2.2 kg (vet)"],
+   [new Date(2026,10,19),"19–25 Nov",`Ear drops continue · <strong>${v10.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}: 10-week visit</strong>: vaccine (C5 #1, ask about lepto) + <strong>first Simparica Trio</strong> + <strong>ear recheck</strong> · no Drontal that day`,"Thu 19 Nov"],
+   [new Date(2026,10,26),"26 Nov – 2 Dec","Finish the ear course as labelled · <strong>Drontal on the vet's date</strong> · get 2–3 insurance quotes by 1 Dec (declare the ear infection)","Thu 26 Nov"],
+   [new Date(2026,11,3),"3–9 Dec","Weekly ear sniff-and-look check · next vaccine (lepto #2 / C5 #2) on the date the vet set · keep him off public ground","Thu 3 Dec"],
+   [new Date(2026,11,10),"10–16 Dec","<strong>12 Dec: 3 months</strong>, so increase food towards about 110–115 g/day if he's lean · weekly ear check","Thu 10 Dec"],
+   [new Date(2026,11,17),"17–21 Dec","<strong>19 Dec: free insurance ends</strong> (paid policy from 20 Dec) · <strong>21 Dec: Simparica Trio #2</strong>, dose by weight","Thu 17 Dec"]];
+  $("#planTbl").innerHTML=`<thead><tr><th>Week</th><th>What to do</th></tr></thead><tbody>${W.map(([d,lbl,what,wt])=>{const cur=t>=d&&t<add(d,7);
+    return `<tr class="si ${cur?"hl":""}"><td style="min-width:84px"><strong>${lbl}</strong></td><td>${what}<div class="muted text-xs mt-1">Weigh: ${wt}</div></td></tr>`;}).join("")}</tbody>`;}
+
 /* ---------------- social ---------------- */
 function renderSocial(){
   let done=0,tot=0;
@@ -533,9 +578,9 @@ function renderVet(){
    ["w4","4 weeks · Drontal Puppy liquid","Given by the breeder",add(dob,28)],
    ["w6","6 weeks · Drontal Puppy liquid","Given by the breeder",add(dob,42)],
    ["w8","8 weeks · Drontal Puppy liquid","Breeder's dose on 7 Nov, the day before he leaves",add(dob,56)],
-   ["w10","10 weeks · due 21 Nov","Breeder says he needs worming; a monthly chew (Simparica Trio or NexGard Spectra) covers it if already started",add(dob,70)],
-   ["w12","12 weeks","Covered by the monthly chew; otherwise worm again",add(dob,84)],
-   ["wm3","3 months","Then monthly (breeder's schedule)",addM(dob,3)],
+   ["w10","10 weeks · 21 Nov: covered by Simparica Trio","Vet gives the first Simparica Trio at the 10-week visit; no Drontal that day (don't double up)",add(dob,70)],
+   ["drn1","Drontal after Simparica","On the date the vet gives at the 10-week visit (adds tapeworm cover)",add(dob,77)],
+   ["wm3","3 months","Monthly roundworm/hookworm covered by Simparica Trio; ask the vet how often to add Drontal",addM(dob,3)],
    ["wm4","Month 4","Monthly",addM(dob,4)],
    ["wm5","Month 5","Monthly",addM(dob,5)],
    ["wm6","6 months","Then every 3 months",addM(dob,6)],
@@ -543,7 +588,7 @@ function renderVet(){
    ["wm12","12 months","Every 3 months for life",addM(dob,12)]];
   $("#wormTbl").innerHTML=head+"<tbody>"+w.map(([id,n,by,d])=>dateRow(id,n,by,d,add(d,3))).join("")+"</tbody>";
   const p=pd(S.cfg.pickup)||add(dob,56);
-  const tk=[];for(let i=0;i<7;i++){const d=addM(p,i);tk.push([`tk${i}`,`${S.cfg.tickProd} #${i+1}`,i===0?"First dose: confirm with breeder/vet":"Same date each month",d]);}
+  const tk0=add(dob,70);const tk=[];for(let i=0;i<7;i++){const d=addM(tk0,i);tk.push([`tk${i}`,`${S.cfg.tickProd} #${i+1}`,i===0?"Vet gives it at the 10-week visit (bring the box)":"Same date each month; dose by his weight that day",d]);}
   $("#tickTbl").innerHTML=head+"<tbody>"+tk.map(([id,n,by,d])=>dateRow(id,n,by,d,add(d,2))).join("")+"</tbody>";
   $("#tickProd").value=S.cfg.tickProd;
 }
@@ -654,6 +699,10 @@ function resetUI(){
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.matches("[data-ck]")){S.checks[t.dataset.ck]=t.checked;if(!t.checked)delete S.checks[t.dataset.ck];save();updateProgress();return;}
+  if(t.matches("[data-ear]")){const [k,w]=t.dataset.ear.split("|");const L=S.ear.log[k]||{a:false,p:false};L[w]=t.checked;S.ear.log[k]=L;save();renderEar();
+    if(t.checked)toast(w==="a"?"Morning drops logged":"Evening drops logged");return;}
+  if(t.id==="earStart"&&DRE.test(t.value)){S.ear.start=t.value;save();renderEar();return;}
+  if(t.id==="earDays"){const n=num(t.value,1,60);if(n!==null){S.ear.days=Math.round(n);save();renderEar();}return;}
   if(t.matches("[data-date]")){if(t.value)S.dates[t.dataset.date]=t.value;else delete S.dates[t.dataset.date];save();renderVet();renderTimeline();icons();return;}
   if(t.matches("[data-cfg]")){const k=t.dataset.cfg;S.cfg[k]=t.type==="range"||t.type==="number"?+t.value:t.value;save();
     if(["pickup","dob","momLeaves"].includes(k)){renderTimeline();renderPhases();renderVet();renderWeights();updateProgress();tick();icons();}
@@ -738,13 +787,14 @@ function noteClick(b){
 /* ---------------- boot ---------------- */
 function renderAll(){
   $$("[data-cfg]").forEach(el=>{const v=S.cfg[el.dataset.cfg];if(v!==undefined&&el.type!=="range")el.value=v;});
-  renderLists();renderTimeline();renderSched();renderAlone();renderPotty();renderSocial();renderCalc();renderTox();renderVet();renderWeights();renderNotes();updateProgress();tick();icons();
+  renderLists();renderTimeline();renderSched();renderAlone();renderPotty();renderEar();renderPlan();renderSocial();renderCalc();renderTox();renderVet();renderWeights();renderNotes();updateProgress();tick();icons();
   if($("#q").value)runSearch();
 }
 $("#aloneDate").value=iso(today());$("#noteDate").value=iso(today());$("#wDate").value=iso(today());
 renderAll();
 setInterval(tick,1000);
 setInterval(renderPottyNext,20000);
+setInterval(renderEarNext,60000);
 const h=location.hash.slice(1);if(h&&$(`[data-panel="${h}"]`))showTab(h);
 $("#storageWarn").classList.toggle("hidden",storageOK);
 })();
